@@ -382,6 +382,24 @@ long int syscall (long int sysno, ...)
 	va_start(va, sysno);
 
 	switch (sysno) {
+		/* gid */
+		case SYS_setgid:
+			rc = setgid(va_arg(va, gid_t));
+			break;
+		case SYS_setregid:
+			rc = setregid(va_arg(va, gid_t),
+				      va_arg(va, gid_t));
+			break;
+		case SYS_setresgid:
+			rc = setresgid(va_arg(va, gid_t),
+				       va_arg(va, gid_t),
+				       va_arg(va, gid_t));
+			break;
+
+		/* uid */
+		case SYS_setuid:
+			rc = setuid(va_arg(va, uid_t));
+			break;
 		case SYS_setreuid:
 			rc = setreuid(va_arg(va, uid_t),
 				      va_arg(va, uid_t));
@@ -391,6 +409,11 @@ long int syscall (long int sysno, ...)
 				       va_arg(va, uid_t),
 				       va_arg(va, uid_t));
 			break;
+
+		/* groups */
+		case SYS_setgroups:
+			rc = setgroups(va_arg(va, size_t),
+				       va_arg(va, const gid_t *));
 		default:
 			rc = uwrap.libc.fns._libc_syscall(sysno, va);
 			break;
