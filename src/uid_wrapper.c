@@ -445,45 +445,62 @@ gid_t getgid(void)
 }
 
 #if defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)
-static long int uwrap_syscall (long int sysno, ...)
+static long int uwrap_syscall (long int sysno, va_list vp)
 {
 	long int rc;
-	va_list va;
-
-	va_start(va, sysno);
 
 	switch (sysno) {
 		/* gid */
 		case SYS_setregid:
-			rc = uwrap_setregid(va_arg(va, gid_t),
-					    va_arg(va, gid_t));
+			{
+				uid_t rgid = (uid_t) va_arg(vp, int);
+				uid_t egid = (uid_t) va_arg(vp, int);
+
+				rc = uwrap_setregid(rgid, egid);
+			}
 			break;
 		case SYS_setresgid:
-			rc = uwrap_setresgid(va_arg(va, gid_t),
-					     va_arg(va, gid_t),
-					     va_arg(va, gid_t));
+			{
+				uid_t rgid = (uid_t) va_arg(vp, int);
+				uid_t egid = (uid_t) va_arg(vp, int);
+				uid_t sgid = (uid_t) va_arg(vp, int);
+
+				rc = uwrap_setresgid(rgid, egid, sgid);
+			}
 			break;
 
 		/* uid */
 		case SYS_setreuid:
-			rc = uwrap_setreuid(va_arg(va, uid_t),
-					    va_arg(va, uid_t));
+			{
+				uid_t ruid = (uid_t) va_arg(vp, int);
+				uid_t euid = (uid_t) va_arg(vp, int);
+
+				rc = uwrap_setreuid(ruid, euid);
+			}
 			break;
 		case SYS_setresuid:
-			rc = uwrap_setresuid(va_arg(va, uid_t),
-					     va_arg(va, uid_t),
-					     va_arg(va, uid_t));
+			{
+				uid_t ruid = (uid_t) va_arg(vp, int);
+				uid_t euid = (uid_t) va_arg(vp, int);
+				uid_t suid = (uid_t) va_arg(vp, int);
+
+				rc = uwrap_setresuid(ruid, euid, suid);
+			}
 			break;
 
 		/* groups */
 		case SYS_setgroups:
-			rc = uwrap_setgroups(va_arg(va, size_t),
-				       va_arg(va, const gid_t *));
+			{
+				size_t size = (size_t) va_arg(vp, size_t);
+				gid_t *list = (gid_t *) va_arg(vp, int *);
+
+				rc = uwrap_setgroups(size, list);
+			}
+			break;
 		default:
-			rc = uwrap.libc.fns._libc_syscall(sysno, va);
+			rc = uwrap.libc.fns._libc_syscall(sysno, vp);
 			break;
 	}
-	va_end(va);
 
 	return rc;
 }
