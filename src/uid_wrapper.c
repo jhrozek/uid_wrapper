@@ -181,6 +181,17 @@ static int uwrap_enabled(void)
 	return uwrap.enabled ? 1 : 0;
 }
 
+static int uwrap_seteuid(uid_t euid) {
+	/* assume for now that the ruid stays as root */
+	if (euid == 0) {
+		uwrap.euid = uwrap.myuid;
+	} else {
+		uwrap.euid = euid;
+	}
+
+	return 0;
+}
+
 #ifdef HAVE_SETEUID
 int seteuid(uid_t euid)
 {
@@ -188,7 +199,15 @@ int seteuid(uid_t euid)
 		return uwrap.libc.fns._libc_seteuid(euid);
 	}
 
+	return uwrap_seteuid(euid);
+}
+#endif
+
+static int uwrap_setreuid(uid_t ruid, uid_t euid)
+{
 	/* assume for now that the ruid stays as root */
+	(void) ruid;
+
 	if (euid == 0) {
 		uwrap.euid = uwrap.myuid;
 	} else {
@@ -197,7 +216,6 @@ int seteuid(uid_t euid)
 
 	return 0;
 }
-#endif
 
 #ifdef HAVE_SETREUID
 int setreuid(uid_t ruid, uid_t euid)
@@ -205,7 +223,17 @@ int setreuid(uid_t ruid, uid_t euid)
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_setreuid(ruid, euid);
 	}
+
+	return uwrap_setreuid(ruid, euid);
+}
+#endif
+
+static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
+{
 	/* assume for now that the ruid stays as root */
+	(void) ruid;
+	(void) suid;
+
 	if (euid == 0) {
 		uwrap.euid = uwrap.myuid;
 	} else {
@@ -214,7 +242,6 @@ int setreuid(uid_t ruid, uid_t euid)
 
 	return 0;
 }
-#endif
 
 #ifdef HAVE_SETRESUID
 int setresuid(uid_t ruid, uid_t euid, uid_t suid)
@@ -223,16 +250,14 @@ int setresuid(uid_t ruid, uid_t euid, uid_t suid)
 		return uwrap.libc.fns._libc_setresuid(ruid, euid, suid);
 	}
 
-	/* assume for now that the ruid stays as root */
-	if (euid == 0) {
-		uwrap.euid = uwrap.myuid;
-	} else {
-		uwrap.euid = euid;
-	}
-
-	return 0;
+	return uwrap_setresuid(ruid, euid, suid);
 }
 #endif
+
+static uid_t uwrap_geteuid(void)
+{
+	return uwrap.euid;
+}
 
 uid_t geteuid(void)
 {
@@ -240,7 +265,19 @@ uid_t geteuid(void)
 		return uwrap.libc.fns._libc_geteuid();
 	}
 
-	return uwrap.euid;
+	return uwrap_geteuid();
+}
+
+static int uwrap_setegid(gid_t egid)
+{
+	/* assume for now that the ruid stays as root */
+	if (egid == 0) {
+		uwrap.egid = uwrap.mygid;
+	} else {
+		uwrap.egid = egid;
+	}
+
+	return 0;
 }
 
 #ifdef HAVE_SETEGID
@@ -250,7 +287,15 @@ int setegid(gid_t egid)
 		return uwrap.libc.fns._libc_setegid(egid);
 	}
 
+	return uwrap_setegid(egid);
+}
+#endif
+
+static int uwrap_setregid(gid_t rgid, gid_t egid)
+{
 	/* assume for now that the ruid stays as root */
+	(void) rgid;
+
 	if (egid == 0) {
 		uwrap.egid = uwrap.mygid;
 	} else {
@@ -259,7 +304,6 @@ int setegid(gid_t egid)
 
 	return 0;
 }
-#endif
 
 #ifdef HAVE_SETREGID
 int setregid(gid_t rgid, gid_t egid)
@@ -268,7 +312,16 @@ int setregid(gid_t rgid, gid_t egid)
 		return uwrap.libc.fns._libc_setregid(rgid, egid);
 	}
 
+	return uwrap_setregid(rgid, egid);
+}
+#endif
+
+static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+{
 	/* assume for now that the ruid stays as root */
+	(void) rgid;
+	(void) sgid;
+
 	if (egid == 0) {
 		uwrap.egid = uwrap.mygid;
 	} else {
@@ -277,7 +330,6 @@ int setregid(gid_t rgid, gid_t egid)
 
 	return 0;
 }
-#endif
 
 #ifdef HAVE_SETRESGID
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
@@ -286,15 +338,14 @@ int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 		return uwrap.libc.fns._libc_setregid(rgid, egid, sgid);
 	}
 
-	/* assume for now that the ruid stays as root */
-	if (egid == 0) {
-		uwrap.egid = uwrap.mygid;
-	} else {
-		uwrap.egid = egid;
-	}
-	return 0;
+	return uwrap_setresgid(rgid, egid, sgid);
 }
 #endif
+
+static uid_t uwrap_getegid(void)
+{
+	return uwrap.egid;
+}
 
 uid_t getegid(void)
 {
@@ -302,15 +353,11 @@ uid_t getegid(void)
 		return uwrap.libc.fns._libc_getegid();
 	}
 
-	return uwrap.egid;
+	return uwrap_getegid();
 }
 
-int setgroups(size_t size, const gid_t *list)
+static int uwrap_setgroups(size_t size, const gid_t *list)
 {
-	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setgroups(size, list);
-	}
-
 	free(uwrap.groups);
 	uwrap.groups = NULL;
 	uwrap.ngroups = 0;
@@ -328,13 +375,18 @@ int setgroups(size_t size, const gid_t *list)
 	return 0;
 }
 
-int getgroups(int size, gid_t *list)
+int setgroups(size_t size, const gid_t *list)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_setgroups(size, list);
+	}
+
+	return uwrap_setgroups(size, list);
+}
+
+static int uwrap_getgroups(int size, gid_t *list)
 {
 	int ngroups;
-
-	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_getgroups(size, list);
-	}
 
 	ngroups = uwrap.ngroups;
 
@@ -353,13 +405,33 @@ int getgroups(int size, gid_t *list)
 	return ngroups;
 }
 
+int getgroups(int size, gid_t *list)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_getgroups(size, list);
+	}
+
+	return uwrap_getgroups(size, list);
+}
+
+static uid_t uwrap_getuid(void)
+{
+	/* we don't simulate ruid changing */
+	return 0;
+}
+
 uid_t getuid(void)
 {
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_getuid();
 	}
 
-	/* we don't simulate ruid changing */
+	return uwrap_getuid();
+}
+
+static gid_t uwrap_getgid(void)
+{
+	/* we don't simulate rgid changing */
 	return 0;
 }
 
@@ -369,8 +441,51 @@ gid_t getgid(void)
 		return uwrap.libc.fns._libc_getgid();
 	}
 
-	/* we don't simulate rgid changing */
-	return 0;
+	return uwrap_getgid();
+}
+
+#if defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)
+static long int uwrap_syscall (long int sysno, ...)
+{
+	long int rc;
+	va_list va;
+
+	va_start(va, sysno);
+
+	switch (sysno) {
+		/* gid */
+		case SYS_setregid:
+			rc = uwrap_setregid(va_arg(va, gid_t),
+					    va_arg(va, gid_t));
+			break;
+		case SYS_setresgid:
+			rc = uwrap_setresgid(va_arg(va, gid_t),
+					     va_arg(va, gid_t),
+					     va_arg(va, gid_t));
+			break;
+
+		/* uid */
+		case SYS_setreuid:
+			rc = uwrap_setreuid(va_arg(va, uid_t),
+					    va_arg(va, uid_t));
+			break;
+		case SYS_setresuid:
+			rc = uwrap_setresuid(va_arg(va, uid_t),
+					     va_arg(va, uid_t),
+					     va_arg(va, uid_t));
+			break;
+
+		/* groups */
+		case SYS_setgroups:
+			rc = uwrap_setgroups(va_arg(va, size_t),
+				       va_arg(va, const gid_t *));
+		default:
+			rc = uwrap.libc.fns._libc_syscall(sysno, va);
+			break;
+	}
+	va_end(va);
+
+	return rc;
 }
 
 #ifdef HAVE_SYSCALL
@@ -381,45 +496,16 @@ long int syscall (long int sysno, ...)
 
 	va_start(va, sysno);
 
-	switch (sysno) {
-		/* gid */
-		case SYS_setgid:
-			rc = setgid(va_arg(va, gid_t));
-			break;
-		case SYS_setregid:
-			rc = setregid(va_arg(va, gid_t),
-				      va_arg(va, gid_t));
-			break;
-		case SYS_setresgid:
-			rc = setresgid(va_arg(va, gid_t),
-				       va_arg(va, gid_t),
-				       va_arg(va, gid_t));
-			break;
-
-		/* uid */
-		case SYS_setuid:
-			rc = setuid(va_arg(va, uid_t));
-			break;
-		case SYS_setreuid:
-			rc = setreuid(va_arg(va, uid_t),
-				      va_arg(va, uid_t));
-			break;
-		case SYS_setresuid:
-			rc = setresuid(va_arg(va, uid_t),
-				       va_arg(va, uid_t),
-				       va_arg(va, uid_t));
-			break;
-
-		/* groups */
-		case SYS_setgroups:
-			rc = setgroups(va_arg(va, size_t),
-				       va_arg(va, const gid_t *));
-		default:
-			rc = uwrap.libc.fns._libc_syscall(sysno, va);
-			break;
+	if (!uwrap_enabled()) {
+		rc = uwrap.libc.fns._libc_syscall(sysno, va);
+		va_end(va);
+		return rc;
 	}
+
+	rc = uwrap_syscall(sysno, va);
 	va_end(va);
 
 	return rc;
 }
-#endif
+#endif /* HAVE_SYSCALL */
+#endif /* HAVE_SYS_SYSCALL_H || HAVE_SYSCALL_H */
