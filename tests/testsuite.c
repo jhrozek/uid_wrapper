@@ -71,6 +71,29 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(u, 42);
 }
 
+#if 0
+/* FIXME */
+static void test_uwrap_syscall(void **state)
+{
+	long int rc;
+	char *env;
+
+	env = getenv("UID_WRAPPER");
+	if (env == NULL) {
+		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
+		return;
+	}
+
+	(void) state; /* unused */
+
+	rc = access(".", R_OK);
+	assert_int_equal(rc, 0);
+
+	rc = syscall(SYS_access, ".", R_OK);
+	assert_int_equal(rc, 0);
+}
+#endif
+
 static void test_uwrap_syscall_setreuid(void **state)
 {
 	long int rc;
@@ -131,6 +154,9 @@ int main(void) {
 	const UnitTest tests[] = {
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setegid),
+#if 0
+		unit_test(test_uwrap_syscall),
+#endif
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
 	};
