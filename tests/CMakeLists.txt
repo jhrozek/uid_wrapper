@@ -10,5 +10,5 @@ add_cmocka_test(testsuite testsuite.c ${CMOCKA_LIBRARY})
 set_tests_properties(
     testsuite
         PROPERTIES
-        ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so
-        ENVIRONMENT UID_WRAPPER=1)
+        ENVIRONMENT UID_WRAPPER=enabled
+        ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so)
