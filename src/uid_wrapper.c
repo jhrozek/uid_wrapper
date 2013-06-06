@@ -444,6 +444,29 @@ gid_t getgid(void)
 	return uwrap_getgid();
 }
 
+static long int libc_vsyscall(long int sysno, va_list va)
+{
+	long int args[8];
+	long int rc;
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		args[i] = va_arg(va, long int);
+	}
+
+	rc = uwrap.libc.fns._libc_syscall(sysno,
+					  args[0],
+					  args[1],
+					  args[2],
+					  args[3],
+					  args[4],
+					  args[5],
+					  args[6],
+					  args[7]);
+
+	return rc;
+}
+
 #if defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)
 static long int uwrap_syscall (long int sysno, va_list vp)
 {
@@ -522,24 +545,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			break;
 #endif
 		default:
-			{
-				long int args[8];
-				int i;
-
-				for (i = 0; i < 8; i++) {
-					args[i] = va_arg(vp, long int);
-				}
-
-				rc = uwrap.libc.fns._libc_syscall(sysno,
-								  args[0],
-								  args[1],
-								  args[2],
-								  args[3],
-								  args[4],
-								  args[5],
-								  args[6],
-								  args[7]);
-			}
+			rc = libc_vsyscall(sysno, vp);
 			break;
 	}
 
@@ -555,7 +561,7 @@ long int syscall (long int sysno, ...)
 	va_start(va, sysno);
 
 	if (!uwrap_enabled()) {
-		rc = uwrap.libc.fns._libc_syscall(sysno, va);
+		rc = libc_vsyscall(sysno, va);
 		va_end(va);
 		return rc;
 	}
