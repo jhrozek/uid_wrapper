@@ -522,8 +522,24 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			break;
 #endif
 		default:
-			/* FIXME */
-			rc = uwrap.libc.fns._libc_syscall(sysno, vp);
+			{
+				long int args[8];
+				int i;
+
+				for (i = 0; i < 8; i++) {
+					args[i] = va_arg(vp, long int);
+				}
+
+				rc = uwrap.libc.fns._libc_syscall(sysno,
+								  args[0],
+								  args[1],
+								  args[2],
+								  args[3],
+								  args[4],
+								  args[5],
+								  args[6],
+								  args[7]);
+			}
 			break;
 	}
 

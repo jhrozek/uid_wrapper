@@ -5,6 +5,8 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include <errno.h>
+#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -71,7 +73,6 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(u, 42);
 }
 
-#if 0
 /* FIXME */
 static void test_uwrap_syscall(void **state)
 {
@@ -90,9 +91,11 @@ static void test_uwrap_syscall(void **state)
 	assert_int_equal(rc, 0);
 
 	rc = syscall(SYS_access, ".", R_OK);
+	if (rc == -1) {
+		printf("access() errno: %s\n", strerror(errno));
+	}
 	assert_int_equal(rc, 0);
 }
-#endif
 
 static void test_uwrap_syscall_setreuid(void **state)
 {
@@ -154,9 +157,7 @@ int main(void) {
 	const UnitTest tests[] = {
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setegid),
-#if 0
 		unit_test(test_uwrap_syscall),
-#endif
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
 	};
