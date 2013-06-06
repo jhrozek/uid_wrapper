@@ -2,7 +2,7 @@ project(libuid_wrapper C)
 
 include_directories(${CMAKE_BINARY_DIR})
 add_library(uid_wrapper SHARED uid_wrapper.c)
-target_link_libraries(uid_wrapper ${NSSWRAP_REQUIRED_LIBRARIES})
+target_link_libraries(uid_wrapper ${UIDWRAP_REQUIRED_LIBRARIES})
 
 install(
   TARGETS
