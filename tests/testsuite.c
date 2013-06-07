@@ -38,7 +38,7 @@ static void test_uwrap_seteuid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = geteuid();
-	assert_int_equal(u, 0);
+	assert_int_equal(u, syscall(SYS_getuid));
 
 	rc = seteuid(42);
 	assert_int_equal(rc, 0);
@@ -65,7 +65,7 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = getegid();
-	assert_int_equal(u, 0);
+	assert_int_equal(u, syscall(SYS_getgid));
 
 	rc = setegid(42);
 	assert_int_equal(rc, 0);
@@ -118,7 +118,7 @@ static void test_uwrap_syscall_setreuid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = geteuid();
-	assert_int_equal(u, 0);
+	assert_int_equal(u, syscall(SYS_getuid));
 
 	rc = syscall(SYS_setreuid, -1, 42);
 	assert_int_equal(rc, 0);
@@ -130,7 +130,7 @@ static void test_uwrap_syscall_setreuid(void **state)
 static void test_uwrap_syscall_setregid(void **state)
 {
 	long int rc;
-	uid_t u;
+	gid_t g;
 	char *env;
 
 	env = getenv("UID_WRAPPER");
@@ -144,14 +144,14 @@ static void test_uwrap_syscall_setregid(void **state)
 	rc = syscall(SYS_setregid, -1, 0);
 	assert_int_equal(rc, 0);
 
-	u = getegid();
-	assert_int_equal(u, 0);
+	g = getegid();
+	assert_int_equal(g, syscall(SYS_getgid));
 
 	rc = syscall(SYS_setregid, -1, 42);
 	assert_int_equal(rc, 0);
 
-	u = getegid();
-	assert_int_equal(u, 42);
+	g = getegid();
+	assert_int_equal(g, 42);
 }
 
 int main(void) {
