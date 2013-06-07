@@ -37,6 +37,12 @@
 #endif
 #include <dlfcn.h>
 
+#ifdef NDEBUG
+#define UWRAP_DEBUG(...)
+#else
+#define UWRAP_DEBUG(...) printf(__VA_ARGS__)
+#endif
+
 #define LIBC_NAME "libc.so"
 
 struct uwrap_libc_fns {
@@ -545,6 +551,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			break;
 #endif
 		default:
+			UWRAP_DEBUG("UID_WRAPPER calling non-wrapped syscall "
+				    "%lu\n", sysno);
+
 			rc = libc_vsyscall(sysno, vp);
 			break;
 	}
