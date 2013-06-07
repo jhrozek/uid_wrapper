@@ -172,8 +172,8 @@ static void uwrap_init(void)
 	if (getenv("UID_WRAPPER")) {
 		uwrap.enabled = true;
 		/* put us in one group */
-		uwrap.myuid = uwrap.euid = geteuid();
-		uwrap.mygid = uwrap.egid = getegid();
+		uwrap.myuid = uwrap.euid = uwrap.libc.fns._libc_geteuid();
+		uwrap.mygid = uwrap.egid = uwrap.libc.fns._libc_getegid();
 		uwrap.ngroups = 1;
 		uwrap.groups = malloc(sizeof(gid_t) * uwrap.ngroups);
 		uwrap.groups[0] = 0;
