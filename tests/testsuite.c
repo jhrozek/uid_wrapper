@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifdef HAVE_SYS_SYSCALL_H
@@ -73,11 +74,11 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(u, 42);
 }
 
-/* FIXME */
 static void test_uwrap_syscall(void **state)
 {
 	long int rc;
 	char *env;
+	struct stat sb;
 
 	env = getenv("UID_WRAPPER");
 	if (env == NULL) {
@@ -91,10 +92,12 @@ static void test_uwrap_syscall(void **state)
 	assert_int_equal(rc, 0);
 
 	rc = syscall(SYS_access, ".", R_OK);
-	if (rc == -1) {
-		printf("access() errno: %s\n", strerror(errno));
-	}
 	assert_int_equal(rc, 0);
+
+	rc = syscall(SYS_stat, ".", &sb);
+	assert_int_equal(rc, 0);
+
+	assert_true(S_ISDIR(sb.st_mode));
 }
 
 static void test_uwrap_syscall_setreuid(void **state)
