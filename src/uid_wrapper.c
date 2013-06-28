@@ -40,7 +40,7 @@
 #ifdef NDEBUG
 #define UWRAP_DEBUG(...)
 #else
-#define UWRAP_DEBUG(...) printf(__VA_ARGS__)
+#define UWRAP_DEBUG(...) fprintf(stderr, __VA_ARGS__)
 #endif
 
 #define LIBC_NAME "libc.so"
@@ -116,12 +116,17 @@ static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 static void uwrap_libc_init(struct uwrap *u)
 {
 	unsigned int i;
+	int flags = RTLD_LAZY;
+
+#ifdef RTLD_DEEPBIND
+	flags |= RTLD_DEEPBIND;
+#endif
 
 	for (u->libc.handle = NULL, i = 10; u->libc.handle == NULL; i--) {
 		char soname[256] = {0};
 
 		snprintf(soname, sizeof(soname), "%s.%u", LIBC_NAME, i);
-		u->libc.handle = dlopen(soname, RTLD_LAZY);
+		u->libc.handle = dlopen(soname, flags);
 	}
 
 	if (u->libc.handle == NULL) {
