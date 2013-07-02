@@ -1,0 +1,12 @@
+UID wrapper library
+====================
+
+This library intercepts seteuid and related calls, and simulates them
+in a manner similar to the nss_wrapper and socket_wrapper libraries.
+
+This allows you to do user switching when testing e.g. file servers.
+
+To use it set the following environment variables:
+
+LD_PRELOAD=libuid_wrapper.so
+UID_WRAPPER=1
