@@ -75,6 +75,44 @@ if (HAVE_SYSCALL)
     add_definitions(-D_GNU_SOURCE)
 endif (HAVE_SYSCALL)
 
+# OPTIONS
+
+if (LINUX)
+    if (HAVE_SYS_SYSCALL_H)
+       list(APPEND CMAKE_REQUIRED_DEFINITIONS "-DHAVE_SYS_SYSCALL_H")
+    endif (HAVE_SYS_SYSCALL_H)
+    if (HAVE_SYSCALL_H)
+        list(APPEND CMAKE_REQUIRED_DEFINITIONS "-DHAVE_SYSCALL_H")
+    endif (HAVE_SYSCALL_H)
+
+check_c_source_compiles("
+#include <sys/types.h>
+#ifdef HAVE_SYS_SYSCALL_H
+#include <sys/syscall.h>
+#endif
+#ifdef HAVE_SYSCALL_H
+#include <syscall.h>
+#endif
+#include <unistd.h>
+
+int main(void) {
+    syscall(SYS_setresuid32, -1, -1, -1);
+    syscall(SYS_setresgid32, -1, -1, -1);
+    syscall(SYS_setreuid32, -1, -1);
+    syscall(SYS_setregid32, -1, -1);
+    syscall(SYS_setuid32, -1);
+    syscall(SYS_setgid32, -1);
+    syscall(SYS_setgroups32, 0, NULL);
+
+    return 0;
+}" HAVE_LINUX_32BIT_SYSCALLS)
+
+    set(CMAKE_REQUIRED_DEFINITIONS)
+endif (LINUX)
+
+
+# SYSTEM LIBRARIES
+
 check_library_exists(dl dlopen "" HAVE_LIBDL)
 if (HAVE_LIBDL)
     find_library(DLFCN_LIBRARY dl)

@@ -484,6 +484,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 	switch (sysno) {
 		/* gid */
 		case SYS_setgid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setgid32:
+#endif
 			{
 				gid_t gid = (gid_t) va_arg(vp, int);
 
@@ -491,6 +494,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			}
 			break;
 		case SYS_setregid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setregid32:
+#endif
 			{
 				uid_t rgid = (uid_t) va_arg(vp, int);
 				uid_t egid = (uid_t) va_arg(vp, int);
@@ -499,6 +505,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			}
 			break;
 		case SYS_setresgid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setresgid32:
+#endif
 			{
 				uid_t rgid = (uid_t) va_arg(vp, int);
 				uid_t egid = (uid_t) va_arg(vp, int);
@@ -510,6 +519,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 
 		/* uid */
 		case SYS_setuid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setuid32:
+#endif
 			{
 				uid_t uid = (uid_t) va_arg(vp, int);
 
@@ -517,6 +529,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			}
 			break;
 		case SYS_setreuid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setreuid32:
+#endif
 			{
 				uid_t ruid = (uid_t) va_arg(vp, int);
 				uid_t euid = (uid_t) va_arg(vp, int);
@@ -525,6 +540,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			}
 			break;
 		case SYS_setresuid:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setresuid32:
+#endif
 			{
 				uid_t ruid = (uid_t) va_arg(vp, int);
 				uid_t euid = (uid_t) va_arg(vp, int);
@@ -536,6 +554,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 
 		/* groups */
 		case SYS_setgroups:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_setgroups32:
+#endif
 			{
 				size_t size = (size_t) va_arg(vp, size_t);
 				gid_t *list = (gid_t *) va_arg(vp, int *);
@@ -545,6 +566,9 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			break;
 #ifdef SYS_initgroups
 		case SYS_initgroups:
+#ifdef HAVE_LINUX_32BIT_SYSCALLS
+		case SYS_initgroups32:
+#endif
 			{
 				const char *user = (const char *) va_arg(vp, char*);
 				gid_t group = (gid_t) va_arg(vp, int);

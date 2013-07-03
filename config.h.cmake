@@ -47,6 +47,8 @@
 
 /**************************** OPTIONS ****************************/
 
+#cmakedefine HAVE_LINUX_32BIT_SYSCALLS 1
+
 /*************************** ENDIAN *****************************/
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
