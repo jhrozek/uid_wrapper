@@ -476,7 +476,8 @@ static long int libc_vsyscall(long int sysno, va_list va)
 	return rc;
 }
 
-#if defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)
+#if (defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)) \
+    && (defined(SYS_setreuid) || defined(SYS_setreuid32))
 static long int uwrap_syscall (long int sysno, va_list vp)
 {
 	long int rc;
