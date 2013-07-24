@@ -196,8 +196,12 @@ static int uwrap_enabled(void)
 	return uwrap.enabled ? 1 : 0;
 }
 
-static int uwrap_seteuid(uid_t euid) {
+static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
+{
 	/* assume for now that the ruid stays as root */
+	(void) ruid;
+	(void) suid;
+
 	if (euid == 0) {
 		uwrap.euid = uwrap.myuid;
 	} else {
@@ -214,23 +218,9 @@ int seteuid(uid_t euid)
 		return uwrap.libc.fns._libc_seteuid(euid);
 	}
 
-	return uwrap_seteuid(euid);
+	return uwrap_setresuid(-1, euid, -1);
 }
 #endif
-
-static int uwrap_setreuid(uid_t ruid, uid_t euid)
-{
-	/* assume for now that the ruid stays as root */
-	(void) ruid;
-
-	if (euid == 0) {
-		uwrap.euid = uwrap.myuid;
-	} else {
-		uwrap.euid = euid;
-	}
-
-	return 0;
-}
 
 #ifdef HAVE_SETREUID
 int setreuid(uid_t ruid, uid_t euid)
@@ -239,24 +229,9 @@ int setreuid(uid_t ruid, uid_t euid)
 		return uwrap.libc.fns._libc_setreuid(ruid, euid);
 	}
 
-	return uwrap_setreuid(ruid, euid);
+	return uwrap_setresuid(ruid, euid, -1);
 }
 #endif
-
-static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
-{
-	/* assume for now that the ruid stays as root */
-	(void) ruid;
-	(void) suid;
-
-	if (euid == 0) {
-		uwrap.euid = uwrap.myuid;
-	} else {
-		uwrap.euid = euid;
-	}
-
-	return 0;
-}
 
 #ifdef HAVE_SETRESUID
 int setresuid(uid_t ruid, uid_t euid, uid_t suid)
@@ -543,7 +518,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				uid_t ruid = (uid_t) va_arg(vp, int);
 				uid_t euid = (uid_t) va_arg(vp, int);
 
-				rc = uwrap_setreuid(ruid, euid);
+				rc = uwrap_setresuid(ruid, euid, -1);
 			}
 			break;
 		case SYS_setresuid:
