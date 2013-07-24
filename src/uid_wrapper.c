@@ -258,9 +258,12 @@ uid_t geteuid(void)
 	return uwrap_geteuid();
 }
 
-static int uwrap_setegid(gid_t egid)
+static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 {
 	/* assume for now that the ruid stays as root */
+	(void) rgid;
+	(void) sgid;
+
 	if (egid == 0) {
 		uwrap.egid = uwrap.mygid;
 	} else {
@@ -277,23 +280,9 @@ int setegid(gid_t egid)
 		return uwrap.libc.fns._libc_setegid(egid);
 	}
 
-	return uwrap_setegid(egid);
+	return uwrap_setresgid(-1, egid, -1);
 }
 #endif
-
-static int uwrap_setregid(gid_t rgid, gid_t egid)
-{
-	/* assume for now that the ruid stays as root */
-	(void) rgid;
-
-	if (egid == 0) {
-		uwrap.egid = uwrap.mygid;
-	} else {
-		uwrap.egid = egid;
-	}
-
-	return 0;
-}
 
 #ifdef HAVE_SETREGID
 int setregid(gid_t rgid, gid_t egid)
@@ -302,24 +291,9 @@ int setregid(gid_t rgid, gid_t egid)
 		return uwrap.libc.fns._libc_setregid(rgid, egid);
 	}
 
-	return uwrap_setregid(rgid, egid);
+	return uwrap_setresgid(rgid, egid, -1);
 }
 #endif
-
-static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
-{
-	/* assume for now that the ruid stays as root */
-	(void) rgid;
-	(void) sgid;
-
-	if (egid == 0) {
-		uwrap.egid = uwrap.mygid;
-	} else {
-		uwrap.egid = egid;
-	}
-
-	return 0;
-}
 
 #ifdef HAVE_SETRESGID
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
@@ -483,7 +457,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				uid_t rgid = (uid_t) va_arg(vp, int);
 				uid_t egid = (uid_t) va_arg(vp, int);
 
-				rc = uwrap_setregid(rgid, egid);
+				rc = uwrap_setresgid(rgid, egid, -1);
 			}
 			break;
 		case SYS_setresgid:
