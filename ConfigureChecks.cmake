@@ -110,6 +110,13 @@ int main(void) {
     set(CMAKE_REQUIRED_DEFINITIONS)
 endif (LINUX)
 
+check_c_source_compiles("
+__thread int tls;
+
+int main(void) {
+    return 0;
+}" HAVE_GCC_THREAD_LOCAL_STORAGE)
+
 
 # SYSTEM LIBRARIES
 

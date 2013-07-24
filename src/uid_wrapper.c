@@ -35,6 +35,12 @@
 #endif
 #include <dlfcn.h>
 
+#ifdef HAVE_GCC_THREAD_LOCAL_STORAGE
+# define UWRAP_THREAD __thread
+#else
+# define UWRAP_THREAD
+#endif
+
 #ifdef NDEBUG
 #define UWRAP_DEBUG(...)
 #else
