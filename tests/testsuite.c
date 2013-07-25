@@ -34,6 +34,9 @@ static void test_uwrap_seteuid(void **state)
 
 	(void) state; /* unused */
 
+	rc = seteuid(-1);
+	assert_int_equal(rc, -1);
+
 	rc = seteuid(0);
 	assert_int_equal(rc, 0);
 

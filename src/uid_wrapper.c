@@ -214,6 +214,11 @@ static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 #ifdef HAVE_SETEUID
 int seteuid(uid_t euid)
 {
+	if (euid == (uid_t)-1) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_seteuid(euid);
 	}
