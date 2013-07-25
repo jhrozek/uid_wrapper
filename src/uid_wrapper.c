@@ -50,6 +50,9 @@
 #define LIBC_NAME "libc.so"
 
 struct uwrap_libc_fns {
+	int (*_libc_setuid)(uid_t uid);
+	uid_t (*_libc_getuid)(void);
+
 #ifdef HAVE_SETEUID
 	int (*_libc_seteuid)(uid_t euid);
 #endif
@@ -60,6 +63,9 @@ struct uwrap_libc_fns {
 	int (*_libc_setresuid)(uid_t ruid, uid_t euid, uid_t suid);
 #endif
 	uid_t (*_libc_geteuid)(void);
+
+	int (*_libc_setgid)(gid_t gid);
+	gid_t (*_libc_getgid)(void);
 #ifdef HAVE_SETEGID
 	int (*_libc_setegid)(uid_t egid);
 #endif
@@ -72,8 +78,6 @@ struct uwrap_libc_fns {
 	gid_t (*_libc_getegid)(void);
 	int (*_libc_getgroups)(int size, gid_t list[]);
 	int (*_libc_setgroups)(size_t size, const gid_t *list);
-	uid_t (*_libc_getuid)(void);
-	gid_t (*_libc_getgid)(void);
 #ifdef HAVE_SYSCALL
 	long int (*_libc_syscall)(long int sysno, ...);
 #endif
@@ -142,6 +146,9 @@ static void uwrap_libc_init(struct uwrap *u)
 		exit(-1);
 	}
 
+	*(void **) (&u->libc.fns._libc_setuid) = uwrap_libc_fn(u, "setuid");
+	*(void **) (&u->libc.fns._libc_getuid) = uwrap_libc_fn(u, "getuid");
+
 #ifdef HAVE_SETEUID
 	*(void **) (&u->libc.fns._libc_seteuid) = uwrap_libc_fn(u, "seteuid");
 #endif
@@ -152,6 +159,9 @@ static void uwrap_libc_init(struct uwrap *u)
 	*(void **) (&u->libc.fns._libc_setresuid) = uwrap_libc_fn(u, "setresuid");
 #endif
 	*(void **) (&u->libc.fns._libc_geteuid) = uwrap_libc_fn(u, "geteuid");
+
+	*(void **) (&u->libc.fns._libc_setgid) = uwrap_libc_fn(u, "setgid");
+	*(void **) (&u->libc.fns._libc_getgid) = uwrap_libc_fn(u, "getgid");
 #ifdef HAVE_SETEGID
 	*(void **) (&u->libc.fns._libc_setegid) = uwrap_libc_fn(u, "setegid");
 #endif
@@ -204,17 +214,53 @@ static int uwrap_enabled(void)
 
 static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
-	/* assume for now that the ruid stays as root */
-	(void) ruid;
-	(void) suid;
+	if (ruid == (uid_t)-1 && euid == (uid_t)-1 && suid == (uid_t)-1) {
+		errno = EINVAL;
+		return -1;
+	}
 
-	if (euid == 0) {
-		uwrap.euid = uwrap.myuid;
-	} else {
+	if (ruid != (uid_t)-1) {
+		uwrap.ruid = ruid;
+	}
+
+	if (euid != (uid_t)-1) {
 		uwrap.euid = euid;
 	}
 
+	if (suid != (uid_t)-1) {
+		uwrap.suid = suid;
+	}
+
 	return 0;
+}
+
+/*
+ * SETUID
+ */
+int setuid(uid_t uid)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_setuid(uid);
+	}
+
+	return uwrap_setresuid(uid, -1, -1);
+}
+
+/*
+ * GETUID
+ */
+static uid_t uwrap_getuid(void)
+{
+	return uwrap.ruid;
+}
+
+uid_t getuid(void)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_getuid();
+	}
+
+	return uwrap_getuid();
 }
 
 #ifdef HAVE_SETEUID
@@ -236,6 +282,11 @@ int seteuid(uid_t euid)
 #ifdef HAVE_SETREUID
 int setreuid(uid_t ruid, uid_t euid)
 {
+	if (ruid == (uid_t)-1 && euid == (uid_t)-1) {
+		errno = EINVAL;
+		return -1;
+	}
+
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_setreuid(ruid, euid);
 	}
@@ -269,16 +320,64 @@ uid_t geteuid(void)
 	return uwrap_geteuid();
 }
 
+/*
+ * SETGID
+ */
+static int uwrap_setgid(gid_t gid)
+{
+	if (gid == (gid_t)-1) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	uwrap.rgid = gid;
+
+	return 0;
+}
+
+int setgid(gid_t gid)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_setgid(gid);
+	}
+
+	return uwrap_setgid(gid);
+}
+
+/*
+ * GETGID
+ */
+static gid_t uwrap_getgid(void)
+{
+	return uwrap.ruid;
+}
+
+gid_t getgid(void)
+{
+	if (!uwrap_enabled()) {
+		return uwrap.libc.fns._libc_getgid();
+	}
+
+	return uwrap_getgid();
+}
+
 static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 {
-	/* assume for now that the ruid stays as root */
-	(void) rgid;
-	(void) sgid;
+	if (rgid == (gid_t)-1 && egid == (gid_t)-1 && sgid == (gid_t)-1) {
+		errno = EINVAL;
+		return -1;
+	}
 
-	if (egid == 0) {
-		uwrap.egid = uwrap.mygid;
-	} else {
+	if (rgid != (gid_t)-1) {
+		uwrap.rgid = rgid;
+	}
+
+	if (egid != (gid_t)-1) {
 		uwrap.egid = egid;
+	}
+
+	if (sgid != (gid_t)-1) {
+		uwrap.sgid = sgid;
 	}
 
 	return 0;
@@ -389,36 +488,6 @@ int getgroups(int size, gid_t *list)
 	return uwrap_getgroups(size, list);
 }
 
-static uid_t uwrap_getuid(void)
-{
-	/* we don't simulate ruid changing */
-	return 0;
-}
-
-uid_t getuid(void)
-{
-	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_getuid();
-	}
-
-	return uwrap_getuid();
-}
-
-static gid_t uwrap_getgid(void)
-{
-	/* we don't simulate rgid changing */
-	return 0;
-}
-
-gid_t getgid(void)
-{
-	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_getgid();
-	}
-
-	return uwrap_getgid();
-}
-
 static long int libc_vsyscall(long int sysno, va_list va)
 {
 	long int args[8];
@@ -457,7 +526,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			{
 				gid_t gid = (gid_t) va_arg(vp, int);
 
-				rc = setgid(gid);
+				rc = uwrap_setresgid(gid, -1, -1);
 			}
 			break;
 		case SYS_setregid:
@@ -492,7 +561,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 			{
 				uid_t uid = (uid_t) va_arg(vp, int);
 
-				rc = setuid(uid);
+				rc = uwrap_setresuid(uid, -1, -1);
 			}
 			break;
 		case SYS_setreuid:
