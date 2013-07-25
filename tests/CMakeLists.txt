@@ -12,3 +12,5 @@ set_tests_properties(
         PROPERTIES
         ENVIRONMENT UID_WRAPPER=enabled
         ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so)
+
+add_executable(getuids getuids.c)
