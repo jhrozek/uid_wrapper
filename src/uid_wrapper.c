@@ -90,9 +90,13 @@ struct uwrap {
 	bool initialised;
 	bool enabled;
 	uid_t myuid;
+	uid_t ruid;
 	uid_t euid;
+	uid_t suid;
 	uid_t mygid;
+	gid_t rgid;
 	gid_t egid;
+	gid_t sgid;
 	gid_t *groups;
 	int ngroups;
 };
@@ -181,8 +185,10 @@ static void uwrap_init(void)
 	if (getenv("UID_WRAPPER")) {
 		uwrap.enabled = true;
 		/* put us in one group */
-		uwrap.myuid = uwrap.euid = uwrap.libc.fns._libc_geteuid();
-		uwrap.mygid = uwrap.egid = uwrap.libc.fns._libc_getegid();
+		uwrap.myuid = uwrap.ruid = uwrap.euid = uwrap.suid =
+			uwrap.libc.fns._libc_geteuid();
+		uwrap.mygid = uwrap.rgid = uwrap.egid = uwrap.sgid =
+			uwrap.libc.fns._libc_getegid();
 		uwrap.ngroups = 1;
 		uwrap.groups = malloc(sizeof(gid_t) * uwrap.ngroups);
 		uwrap.groups[0] = 0;
