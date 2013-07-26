@@ -195,8 +195,13 @@ static void uwrap_init(void)
 	if (getenv("UID_WRAPPER")) {
 		uwrap.enabled = true;
 		/* put us in one group */
-		uwrap.myuid = uwrap.libc.fns._libc_geteuid();
-		uwrap.mygid = uwrap.libc.fns._libc_getegid();
+		if (getenv("UID_WRAPPER_ROOT")) {
+			uwrap.myuid = 0;
+			uwrap.mygid = 0;
+		} else {
+			uwrap.myuid = uwrap.libc.fns._libc_geteuid();
+			uwrap.mygid = uwrap.libc.fns._libc_getegid();
+		}
 
 		uwrap.ruid = uwrap.euid = uwrap.suid = uwrap.myuid;
 		uwrap.rgid = uwrap.egid = uwrap.sgid = uwrap.mygid;
