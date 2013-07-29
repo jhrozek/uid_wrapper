@@ -610,19 +610,6 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				rc = uwrap_setgroups(size, list);
 			}
 			break;
-#ifdef SYS_initgroups
-		case SYS_initgroups:
-#ifdef HAVE_LINUX_32BIT_SYSCALLS
-		case SYS_initgroups32:
-#endif
-			{
-				const char *user = (const char *) va_arg(vp, char*);
-				gid_t group = (gid_t) va_arg(vp, int);
-
-				rc = initgroups(user, group);
-			}
-			break;
-#endif
 		default:
 			UWRAP_DEBUG("UID_WRAPPER calling non-wrapped syscall "
 				    "%lu\n", sysno);
