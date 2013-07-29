@@ -10,3 +10,8 @@ To use it set the following environment variables:
 
 LD_PRELOAD=libuid_wrapper.so
 UID_WRAPPER=1
+
+If you unset the variable or set it to 0 you can disable uwrap even if it is
+loaded. If you need the application to think it is root at startup you can set:
+
+UID_WRAPPER_ROOT=1

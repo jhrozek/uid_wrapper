@@ -183,6 +183,8 @@ static void uwrap_libc_init(struct uwrap *u)
 
 static void uwrap_init(void)
 {
+	const char *env = getenv("UID_WRAPPER");
+
 	if (uwrap.initialised) {
 		return;
 	}
@@ -192,10 +194,11 @@ static void uwrap_init(void)
 	uwrap.initialised = true;
 	uwrap.enabled = false;
 
-	if (getenv("UID_WRAPPER")) {
+	if (env != NULL && env[0] == '1') {
+		const char *root = getenv("UID_WRAPPER_ROOT");
 		uwrap.enabled = true;
 		/* put us in one group */
-		if (getenv("UID_WRAPPER_ROOT")) {
+		if (root != NULL && root[0] == '1') {
 			uwrap.myuid = 0;
 			uwrap.mygid = 0;
 		} else {
