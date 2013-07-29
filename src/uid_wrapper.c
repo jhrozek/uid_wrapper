@@ -356,7 +356,7 @@ int setgid(gid_t gid)
  */
 static gid_t uwrap_getgid(void)
 {
-	return uwrap.ruid;
+	return uwrap.rgid;
 }
 
 gid_t getgid(void)
