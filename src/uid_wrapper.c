@@ -248,14 +248,16 @@ static struct uwrap_thread *find_uwrap_id(pthread_t tid)
 	return NULL;
 }
 
-static int uwrap_new_id(pthread_t tid)
+static int uwrap_new_id(pthread_t tid, bool do_alloc)
 {
-	struct uwrap_thread *id;
+	struct uwrap_thread *id = uwrap_tls_id;
 
-	id = malloc(sizeof(struct uwrap_thread));
-	if (id == NULL) {
-		errno = ENOMEM;
-		return -1;
+	if (do_alloc) {
+		id = malloc(sizeof(struct uwrap_thread));
+		if (id == NULL) {
+			errno = ENOMEM;
+			return -1;
+		}
 	}
 
 	id->tid = tid;
@@ -268,8 +270,10 @@ static int uwrap_new_id(pthread_t tid)
 	id->groups = malloc(sizeof(gid_t) * id->ngroups);
 	id->groups[0] = uwrap.mygid;
 
-	UWRAP_DLIST_ADD(uwrap.ids, id);
-	uwrap_tls_id = id;
+	if (do_alloc) {
+		UWRAP_DLIST_ADD(uwrap.ids, id);
+		uwrap_tls_id = id;
+	}
 
 	return 0;
 }
@@ -280,24 +284,34 @@ static void uwrap_init(void)
 	pthread_t tid = pthread_self();
 
 
-	pthread_mutex_lock(&uwrap_id_mutex);
 
 	if (uwrap.initialised) {
-		struct uwrap_thread *id;
+		struct uwrap_thread *id = uwrap_tls_id;
+		int rc;
 
+		if (id != NULL) {
+			return;
+		}
+
+		pthread_mutex_lock(&uwrap_id_mutex);
 		id = find_uwrap_id(tid);
 		if (id == NULL) {
-			int rc;
-
-			rc = uwrap_new_id(tid);
+			rc = uwrap_new_id(tid, 1);
 			if (rc < 0) {
 				exit(-1);
 			}
-		}
+		} else {
+			/* We reuse an old thread id */
+			uwrap_tls_id = id;
 
+			uwrap_new_id(tid, 0);
+		}
 		pthread_mutex_unlock(&uwrap_id_mutex);
+
 		return;
 	}
+
+	pthread_mutex_lock(&uwrap_id_mutex);
 
 	uwrap_libc_init(&uwrap);
 
@@ -317,7 +331,7 @@ static void uwrap_init(void)
 			uwrap.mygid = uwrap.libc.fns._libc_getegid();
 		}
 
-		rc = uwrap_new_id(tid);
+		rc = uwrap_new_id(tid, 1);
 		if (rc < 0) {
 			exit(-1);
 		}
