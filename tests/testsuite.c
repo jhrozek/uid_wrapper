@@ -43,10 +43,34 @@ static void test_uwrap_seteuid(void **state)
 	u = geteuid();
 	assert_int_equal(u, syscall(SYS_geteuid));
 
-	rc = seteuid(42);
+	rc = setuid(42);
 	assert_int_equal(rc, 0);
 
-	u = geteuid();
+	u = getuid();
+	assert_int_equal(u, 42);
+}
+
+static void test_uwrap_setuid(void **state)
+{
+	int rc;
+	uid_t u;
+	char *env;
+
+	env = getenv("UID_WRAPPER");
+	if (env == NULL) {
+		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
+		return;
+	}
+
+	(void) state; /* unused */
+
+	rc = setuid(-1);
+	assert_int_equal(rc, -1);
+
+	rc = setuid(42);
+	assert_int_equal(rc, 0);
+
+	u = getuid();
 	assert_int_equal(u, 42);
 }
 
@@ -162,6 +186,7 @@ int main(void) {
 
 	const UnitTest tests[] = {
 		unit_test(test_uwrap_seteuid),
+		unit_test(test_uwrap_setuid),
 		unit_test(test_uwrap_setegid),
 		unit_test(test_uwrap_syscall),
 		unit_test(test_uwrap_syscall_setreuid),
