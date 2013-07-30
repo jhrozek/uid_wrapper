@@ -155,6 +155,12 @@ struct uwrap {
 
 static struct uwrap uwrap;
 
+/* Shortcut to the list item */
+static UWRAP_THREAD struct uwrap_thread *uwrap_tls_id;
+
+/* The mutex or accessing the id */
+static pthread_mutex_t uwrap_id_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -263,6 +269,7 @@ static int uwrap_new_id(pthread_t tid)
 	id->groups[0] = uwrap.mygid;
 
 	UWRAP_DLIST_ADD(uwrap.ids, id);
+	uwrap_tls_id = id;
 
 	return 0;
 }
@@ -270,15 +277,25 @@ static int uwrap_new_id(pthread_t tid)
 static void uwrap_init(void)
 {
 	const char *env = getenv("UID_WRAPPER");
+	pthread_t tid = pthread_self();
+
+
+	pthread_mutex_lock(&uwrap_id_mutex);
 
 	if (uwrap.initialised) {
-		pthread_t tid = pthread_self();
-		struct uwrap_thread *id = find_uwrap_id(tid);
+		struct uwrap_thread *id;
 
+		id = find_uwrap_id(tid);
 		if (id == NULL) {
-			uwrap_new_id(tid);
+			int rc;
+
+			rc = uwrap_new_id(tid);
+			if (rc < 0) {
+				exit(-1);
+			}
 		}
 
+		pthread_mutex_unlock(&uwrap_id_mutex);
 		return;
 	}
 
@@ -289,6 +306,7 @@ static void uwrap_init(void)
 
 	if (env != NULL && env[0] == '1') {
 		const char *root = getenv("UID_WRAPPER_ROOT");
+		int rc;
 
 		/* put us in one group */
 		if (root != NULL && root[0] == '1') {
@@ -299,8 +317,15 @@ static void uwrap_init(void)
 			uwrap.mygid = uwrap.libc.fns._libc_getegid();
 		}
 
+		rc = uwrap_new_id(tid);
+		if (rc < 0) {
+			exit(-1);
+		}
+
 		uwrap.enabled = true;
 	}
+
+	pthread_mutex_unlock(&uwrap_id_mutex);
 }
 
 static int uwrap_enabled(void)
@@ -312,13 +337,14 @@ static int uwrap_enabled(void)
 
 static int uwrap_setresuid_thread(uid_t ruid, uid_t euid, uid_t suid)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
 
 	if (ruid == (uid_t)-1 && euid == (uid_t)-1 && suid == (uid_t)-1) {
 		errno = EINVAL;
 		return -1;
 	}
 
+	pthread_mutex_lock(&uwrap_id_mutex);
 	if (ruid != (uid_t)-1) {
 		id->ruid = ruid;
 	}
@@ -330,6 +356,7 @@ static int uwrap_setresuid_thread(uid_t ruid, uid_t euid, uid_t suid)
 	if (suid != (uid_t)-1) {
 		id->suid = suid;
 	}
+	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	return 0;
 }
@@ -343,6 +370,7 @@ static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 		return -1;
 	}
 
+	pthread_mutex_lock(&uwrap_id_mutex);
 	for (id = uwrap.ids; id; id = id->next) {
 		if (id->dead) {
 			continue;
@@ -360,6 +388,7 @@ static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 			id->suid = suid;
 		}
 	}
+	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	return 0;
 }
@@ -424,9 +453,14 @@ int setresuid(uid_t ruid, uid_t euid, uid_t suid)
  */
 static uid_t uwrap_getuid(void)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
+	uid_t uid;
 
-	return id->ruid;
+	pthread_mutex_lock(&uwrap_id_mutex);
+	uid = id->ruid;
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return uid;
 }
 
 uid_t getuid(void)
@@ -443,9 +477,14 @@ uid_t getuid(void)
  */
 static uid_t uwrap_geteuid(void)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
+	uid_t uid;
 
-	return id->euid;
+	pthread_mutex_lock(&uwrap_id_mutex);
+	uid = id->euid;
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return uid;
 }
 
 uid_t geteuid(void)
@@ -459,15 +498,14 @@ uid_t geteuid(void)
 
 static int uwrap_setresgid_thread(gid_t rgid, gid_t egid, gid_t sgid)
 {
-	struct uwrap_thread *id;
+	struct uwrap_thread *id = uwrap_tls_id;
 
 	if (rgid == (gid_t)-1 && egid == (gid_t)-1 && sgid == (gid_t)-1) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	id = find_uwrap_id(pthread_self());
-
+	pthread_mutex_lock(&uwrap_id_mutex);
 	if (rgid != (gid_t)-1) {
 		id->rgid = rgid;
 	}
@@ -479,6 +517,7 @@ static int uwrap_setresgid_thread(gid_t rgid, gid_t egid, gid_t sgid)
 	if (sgid != (gid_t)-1) {
 		id->sgid = sgid;
 	}
+	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	return 0;
 }
@@ -492,6 +531,7 @@ static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 		return -1;
 	}
 
+	pthread_mutex_lock(&uwrap_id_mutex);
 	for (id = uwrap.ids; id; id = id->next) {
 		if (id->dead) {
 			continue;
@@ -509,6 +549,7 @@ static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 			id->sgid = sgid;
 		}
 	}
+	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	return 0;
 }
@@ -563,9 +604,14 @@ int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
  */
 static gid_t uwrap_getgid(void)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
+	gid_t gid;
 
-	return id->rgid;
+	pthread_mutex_lock(&uwrap_id_mutex);
+	gid = id->rgid;
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return gid;
 }
 
 gid_t getgid(void)
@@ -582,9 +628,14 @@ gid_t getgid(void)
  */
 static uid_t uwrap_getegid(void)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
+	gid_t gid;
 
-	return id->egid;
+	pthread_mutex_lock(&uwrap_id_mutex);
+	gid = id->egid;
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return gid;
 }
 
 uid_t getegid(void)
@@ -598,8 +649,10 @@ uid_t getegid(void)
 
 static int uwrap_setgroups_thread(size_t size, const gid_t *list)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
+	int rc = -1;
 
+	pthread_mutex_lock(&uwrap_id_mutex);
 	free(id->groups);
 	id->groups = NULL;
 	id->ngroups = 0;
@@ -608,13 +661,17 @@ static int uwrap_setgroups_thread(size_t size, const gid_t *list)
 		id->groups = malloc(sizeof(gid_t) * size);
 		if (id->groups == NULL) {
 			errno = ENOMEM;
-			return -1;
+			goto out;
 		}
 		id->ngroups = size;
 		memcpy(id->groups, list, size * sizeof(gid_t));
 	}
 
-	return 0;
+	rc = 0;
+out:
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return rc;
 }
 
 int setgroups(size_t size, const gid_t *list)
@@ -628,22 +685,26 @@ int setgroups(size_t size, const gid_t *list)
 
 static int uwrap_getgroups(int size, gid_t *list)
 {
-	struct uwrap_thread *id = find_uwrap_id(pthread_self());
+	struct uwrap_thread *id = uwrap_tls_id;
 	int ngroups;
 
+	pthread_mutex_lock(&uwrap_id_mutex);
 	ngroups = id->ngroups;
 
 	if (size > ngroups) {
 		size = ngroups;
 	}
 	if (size == 0) {
-		return ngroups;
+		goto out;
 	}
 	if (size < ngroups) {
 		errno = EINVAL;
-		return -1;
+		ngroups = -1;
 	}
 	memcpy(list, id->groups, size * sizeof(gid_t));
+
+out:
+	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	return ngroups;
 }
