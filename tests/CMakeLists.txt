@@ -6,11 +6,13 @@ include_directories(
   ${CMOCKA_INCLUDE_DIR}
 )
 
+set(TEST_ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so;UID_WRAPPER=1)
+
 add_cmocka_test(testsuite testsuite.c ${CMOCKA_LIBRARY})
-set_tests_properties(
-    testsuite
-        PROPERTIES
-        ENVIRONMENT UID_WRAPPER=enabled
-        ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so)
+set_property(
+    TEST
+        testsuite
+    PROPERTY
+        ENVIRONMENT ${TEST_ENVIRONMENT})
 
 add_executable(getuids getuids.c)

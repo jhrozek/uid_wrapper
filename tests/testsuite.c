@@ -41,7 +41,7 @@ static void test_uwrap_seteuid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = geteuid();
-	assert_int_equal(u, syscall(SYS_getuid));
+	assert_int_equal(u, syscall(SYS_geteuid));
 
 	rc = seteuid(42);
 	assert_int_equal(rc, 0);
@@ -68,7 +68,7 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = getegid();
-	assert_int_equal(u, syscall(SYS_getgid));
+	assert_int_equal(u, syscall(SYS_getegid));
 
 	rc = setegid(42);
 	assert_int_equal(rc, 0);
@@ -121,7 +121,7 @@ static void test_uwrap_syscall_setreuid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = geteuid();
-	assert_int_equal(u, syscall(SYS_getuid));
+	assert_int_equal(u, syscall(SYS_geteuid));
 
 	rc = syscall(SYS_setreuid, -1, 42);
 	assert_int_equal(rc, 0);
@@ -148,7 +148,7 @@ static void test_uwrap_syscall_setregid(void **state)
 	assert_int_equal(rc, 0);
 
 	g = getegid();
-	assert_int_equal(g, syscall(SYS_getgid));
+	assert_int_equal(g, syscall(SYS_getegid));
 
 	rc = syscall(SYS_setregid, -1, 42);
 	assert_int_equal(rc, 0);
