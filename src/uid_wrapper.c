@@ -688,13 +688,42 @@ out:
 	return rc;
 }
 
+static int uwrap_setgroups(size_t size, const gid_t *list)
+{
+	struct uwrap_thread *id;
+	int rc = -1;
+
+	pthread_mutex_lock(&uwrap_id_mutex);
+	for (id = uwrap.ids; id; id = id->next) {
+		free(id->groups);
+		id->groups = NULL;
+		id->ngroups = 0;
+
+		if (size != 0) {
+			id->groups = malloc(sizeof(gid_t) * size);
+			if (id->groups == NULL) {
+				errno = ENOMEM;
+				goto out;
+			}
+			id->ngroups = size;
+			memcpy(id->groups, list, size * sizeof(gid_t));
+		}
+	}
+
+	rc = 0;
+out:
+	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	return rc;
+}
+
 int setgroups(size_t size, const gid_t *list)
 {
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_setgroups(size, list);
 	}
 
-	return uwrap_setgroups_thread(size, list);
+	return uwrap_setgroups(size, list);
 }
 
 static int uwrap_getgroups(int size, gid_t *list)
