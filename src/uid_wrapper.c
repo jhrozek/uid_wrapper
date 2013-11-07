@@ -491,12 +491,18 @@ uid_t getuid(void)
  */
 static uid_t uwrap_geteuid(void)
 {
+	const char *env = getenv("UID_WRAPPER_ROOT");
 	struct uwrap_thread *id = uwrap_tls_id;
 	uid_t uid;
 
 	pthread_mutex_lock(&uwrap_id_mutex);
 	uid = id->euid;
 	pthread_mutex_unlock(&uwrap_id_mutex);
+
+	/* Disable root and return myuid */
+	if (env != NULL && env[0] == '2') {
+		uid = uwrap.myuid;
+	}
 
 	return uid;
 }

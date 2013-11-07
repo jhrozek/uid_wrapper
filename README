@@ -15,3 +15,6 @@ If you unset the variable or set it to 0 you can disable uwrap even if it is
 loaded. If you need the application to think it is root at startup you can set:
 
 UID_WRAPPER_ROOT=1
+
+If you set the environment variable to UID_WRAPPER_ROOT=2 before you call
+geteuid() then it will return the real uid.
