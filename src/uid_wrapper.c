@@ -278,6 +278,32 @@ static int uwrap_new_id(pthread_t tid, bool do_alloc)
 	return 0;
 }
 
+static void uwrap_thread_prepare(void)
+{
+	pthread_mutex_lock(&uwrap_id_mutex);
+
+	/*
+	 * What happens if another atfork prepare functions calls a uwrap
+	 * function? So disable it in case another atfork prepare function
+	 * calls a (s)uid function.
+	 */
+	uwrap.enabled = false;
+}
+
+static void uwrap_thread_parent(void)
+{
+	uwrap.enabled = true;
+
+	pthread_mutex_unlock(&uwrap_id_mutex);
+}
+
+static void uwrap_thread_child(void)
+{
+	uwrap.enabled = true;
+
+	pthread_mutex_unlock(&uwrap_id_mutex);
+}
+
 static void uwrap_init(void)
 {
 	const char *env = getenv("UID_WRAPPER");
@@ -288,6 +314,15 @@ static void uwrap_init(void)
 	if (uwrap.initialised) {
 		struct uwrap_thread *id = uwrap_tls_id;
 		int rc;
+
+		/*
+		 * If we hold a lock and the application forks, then the child
+		 * is not able to unlock the mutex and we are in a deadlock.
+		 * This should prevent such deadlocks.
+		 */
+		pthread_atfork(&uwrap_thread_prepare,
+			       &uwrap_thread_parent,
+			       &uwrap_thread_child);
 
 		if (id != NULL) {
 			return;
