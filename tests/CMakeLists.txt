@@ -6,7 +6,11 @@ include_directories(
   ${CMOCKA_INCLUDE_DIR}
 )
 
-set(TEST_ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so;UID_WRAPPER=1)
+if (OSX)
+    set(TEST_ENVIRONMENT DYLD_FORCE_FLAT_NAMESPACE=1;DYLD_INSERT_LIBRARIES=${CMAKE_BINARY_DIR}/src/libuid_wrapper.dylib;UID_WRAPPER=1)
+else ()
+    set(TEST_ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so;UID_WRAPPER=1)
+endif ()
 
 add_cmocka_test(testsuite testsuite.c ${CMOCKA_LIBRARY})
 set_property(
