@@ -40,6 +40,10 @@
 /* Define to 1 if you have the `setresgid' function. */
 #cmakedefine HAVE_SETREGID 1
 
+/* Define to 1 if you have the `setgroups' function. */
+#cmakedefine HAVE_SETGROUPS 1
+#cmakedefine HAVE_SETGROUPS_INT 1
+
 /* Define to 1 if you have the `syscall' function. */
 #cmakedefine HAVE_SYSCALL 1
 

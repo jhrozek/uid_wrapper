@@ -69,6 +69,14 @@ check_function_exists(setregid HAVE_SETRESGID)
 check_function_exists(getgroups HAVE_GETGROUPS)
 check_function_exists(setgroups HAVE_SETGROUPS)
 
+if (HAVE_SETGROUPS)
+    check_prototype_definition(setgroups
+        "int setgroups(int size, const gid_t *list)"
+        "-1"
+        "unistd.h"
+        HAVE_SETGROUPS_INT)
+endif (HAVE_SETGROUPS)
+
 check_function_exists(syscall HAVE_SYSCALL)
 
 if (HAVE_SYSCALL)

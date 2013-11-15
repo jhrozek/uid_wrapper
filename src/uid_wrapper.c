@@ -758,7 +758,11 @@ out:
 	return rc;
 }
 
+#ifdef HAVE_SETGROUPS_INT
+int setgroups(int size, const gid_t *list)
+#else
 int setgroups(size_t size, const gid_t *list)
+#endif
 {
 	if (!uwrap_enabled()) {
 		return uwrap.libc.fns._libc_setgroups(size, list);
