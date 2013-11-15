@@ -25,4 +25,6 @@ set_property(
         ENVIRONMENT ${TEST_ENVIRONMENT})
 endif(LINUX)
 
-add_executable(getuids getuids.c)
+if (LINUX)
+    add_executable(getuids getuids.c)
+endif (LINUX)
