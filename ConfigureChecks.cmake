@@ -81,6 +81,12 @@ check_function_exists(syscall HAVE_SYSCALL)
 
 if (HAVE_SYSCALL)
     add_definitions(-D_GNU_SOURCE)
+
+    check_prototype_definition(syscall
+        "int syscall(int sysno, ...)"
+        "-1"
+        "unistd.h;sys/syscall.h"
+        HAVE_SYSCALL_INT)
 endif (HAVE_SYSCALL)
 
 # OPTIONS

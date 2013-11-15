@@ -962,9 +962,17 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 }
 
 #ifdef HAVE_SYSCALL
+#ifdef HAVE_SYSCALL_INT
+int syscall (int sysno, ...)
+#else
 long int syscall (long int sysno, ...)
+#endif
 {
+#ifdef HAVE_SYSCALL_INT
+	int rc;
+#else
 	long int rc;
+#endif
 	va_list va;
 
 	va_start(va, sysno);

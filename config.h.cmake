@@ -46,6 +46,7 @@
 
 /* Define to 1 if you have the `syscall' function. */
 #cmakedefine HAVE_SYSCALL 1
+#cmakedefine HAVE_SYSCALL_INT 1
 
 /*************************** LIBRARIES ***************************/
 
