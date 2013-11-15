@@ -321,15 +321,6 @@ static void uwrap_init(void)
 		struct uwrap_thread *id = uwrap_tls_id;
 		int rc;
 
-		/*
-		 * If we hold a lock and the application forks, then the child
-		 * is not able to unlock the mutex and we are in a deadlock.
-		 * This should prevent such deadlocks.
-		 */
-		pthread_atfork(&uwrap_thread_prepare,
-			       &uwrap_thread_parent,
-			       &uwrap_thread_child);
-
 		if (id != NULL) {
 			return;
 		}
@@ -351,6 +342,15 @@ static void uwrap_init(void)
 
 		return;
 	}
+
+	/*
+	 * If we hold a lock and the application forks, then the child
+	 * is not able to unlock the mutex and we are in a deadlock.
+	 * This should prevent such deadlocks.
+	 */
+	pthread_atfork(&uwrap_thread_prepare,
+		       &uwrap_thread_parent,
+		       &uwrap_thread_child);
 
 	pthread_mutex_lock(&uwrap_id_mutex);
 
