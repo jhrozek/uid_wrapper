@@ -165,11 +165,15 @@ static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
 
+#ifdef HAVE_APPLE
+	func = dlsym(RTLD_NEXT, fn_name);
+#else
 	if (u->libc.handle == NULL) {
 		return NULL;
 	}
 
 	func = dlsym(u->libc.handle, fn_name);
+#endif
 	if (func == NULL) {
 		printf("Failed to find %s in %s: %s\n",
 				fn_name, LIBC_NAME, dlerror());
@@ -181,7 +185,8 @@ static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 
 static void uwrap_libc_init(struct uwrap *u)
 {
-	unsigned int i;
+	unsigned int i = 0;
+#ifndef HAVE_APPLE
 	int flags = RTLD_LAZY;
 
 #ifdef RTLD_DEEPBIND
@@ -199,6 +204,7 @@ static void uwrap_libc_init(struct uwrap *u)
 		printf("Failed to dlopen %s.%u: %s\n", LIBC_NAME, i, dlerror());
 		exit(-1);
 	}
+#endif
 
 	*(void **) (&u->libc.fns._libc_setuid) = uwrap_libc_fn(u, "setuid");
 	*(void **) (&u->libc.fns._libc_getuid) = uwrap_libc_fn(u, "getuid");

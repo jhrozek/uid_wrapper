@@ -185,10 +185,10 @@ int main(void) {
 	int rc;
 
 	const UnitTest tests[] = {
+		unit_test(test_uwrap_syscall),
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setuid),
 		unit_test(test_uwrap_setegid),
-		unit_test(test_uwrap_syscall),
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
 	};
