@@ -52,6 +52,8 @@
 
 /**************************** OPTIONS ****************************/
 
+#cmakedefine HAVE_APPLE 1
+
 #cmakedefine HAVE_LINUX_32BIT_SYSCALLS 1
 
 #cmakedefine HAVE_GCC_THREAD_LOCAL_STORAGE 1
