@@ -874,6 +874,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				rc = uwrap_setresgid_thread(rgid, egid, -1);
 			}
 			break;
+#ifdef SYS_setresgid
 		case SYS_setresgid:
 #ifdef HAVE_LINUX_32BIT_SYSCALLS
 		case SYS_setresgid32:
@@ -886,6 +887,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				rc = uwrap_setresgid_thread(rgid, egid, sgid);
 			}
 			break;
+#endif /* SYS_setresgid */
 
 		/* uid */
 		case SYS_getuid:
@@ -925,6 +927,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				rc = uwrap_setresuid_thread(ruid, euid, -1);
 			}
 			break;
+#ifdef SYS_setresuid
 		case SYS_setresuid:
 #ifdef HAVE_LINUX_32BIT_SYSCALLS
 		case SYS_setresuid32:
@@ -937,6 +940,7 @@ static long int uwrap_syscall (long int sysno, va_list vp)
 				rc = uwrap_setresuid_thread(ruid, euid, suid);
 			}
 			break;
+#endif /* SYS_setresuid */
 
 		/* groups */
 		case SYS_setgroups:
