@@ -149,7 +149,9 @@ static void test_uwrap_syscall_setreuid(void **state)
 	assert_int_equal(rc, 0);
 
 	u = geteuid();
+#ifdef SYS_geteuid /* not available on Solaris */
 	assert_int_equal(u, syscall(SYS_geteuid));
+#endif
 
 	rc = syscall(SYS_setreuid, -1, 42);
 	assert_int_equal(rc, 0);
@@ -176,7 +178,9 @@ static void test_uwrap_syscall_setregid(void **state)
 	assert_int_equal(rc, 0);
 
 	g = getegid();
+#ifdef SYS_getegid /* Not available on Solaris */
 	assert_int_equal(g, syscall(SYS_getegid));
+#endif
 
 	rc = syscall(SYS_setregid, -1, 42);
 	assert_int_equal(rc, 0);
