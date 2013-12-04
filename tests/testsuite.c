@@ -14,6 +14,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <grp.h>
+
 #ifdef HAVE_SYS_SYSCALL_H
 #include <sys/syscall.h>
 #endif
@@ -22,6 +24,7 @@
 #endif
 
 #define ZERO_STRUCT(x) memset((char *)&(x), 0, sizeof(x))
+#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 static void test_uwrap_seteuid(void **state)
 {
@@ -230,6 +233,23 @@ static void test_uwrap_syscall_setregid(void **state)
 	assert_int_equal(g, 42);
 }
 
+static void test_uwrap_setgroups(void **state)
+{
+	gid_t glist[] = { 100, 200, 300, 400, 500 };
+	gid_t rlist[16];
+	int rc;
+
+	(void) state; /* unused */
+
+	rc = setgroups(ARRAY_SIZE(glist), glist);
+	assert_int_equal(rc, 0);
+
+	rc = getgroups(ARRAY_SIZE(rlist), rlist);
+	assert_int_equal(rc, 5);
+
+	assert_memory_equal(glist, rlist, sizeof(glist));
+}
+
 int main(void) {
 	int rc;
 
@@ -241,6 +261,7 @@ int main(void) {
 		unit_test(test_uwrap_setgid),
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
+		unit_test(test_uwrap_setgroups),
 	};
 
 	rc = run_tests(tests);
