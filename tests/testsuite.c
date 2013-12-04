@@ -108,6 +108,30 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(u, 42);
 }
 
+static void test_uwrap_setgid(void **state)
+{
+	int rc;
+	gid_t u;
+	char *env;
+
+	env = getenv("UID_WRAPPER");
+	if (env == NULL) {
+		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
+		return;
+	}
+
+	(void) state; /* unused */
+
+	rc = setgid(-1);
+	assert_int_equal(rc, -1);
+
+	rc = setgid(42);
+	assert_int_equal(rc, 0);
+
+	u = getgid();
+	assert_int_equal(u, 42);
+}
+
 static void test_uwrap_syscall(void **state)
 {
 	long int rc;
@@ -214,6 +238,7 @@ int main(void) {
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setuid),
 		unit_test(test_uwrap_setegid),
+		unit_test(test_uwrap_setgid),
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
 	};
