@@ -233,6 +233,18 @@ static void test_uwrap_syscall_setregid(void **state)
 	assert_int_equal(g, 42);
 }
 
+static void test_uwrap_getgroups(void **state)
+{
+	gid_t rlist[16] = {0};
+	int rc;
+
+	(void) state; /* unused */
+
+	rc = getgroups(ARRAY_SIZE(rlist), rlist);
+	assert_int_equal(rc, 1);
+	assert_int_equal(rlist[0], getegid());
+}
+
 static void test_uwrap_setgroups(void **state)
 {
 	gid_t glist[] = { 100, 200, 300, 400, 500 };
@@ -255,6 +267,8 @@ int main(void) {
 
 	const UnitTest tests[] = {
 		unit_test(test_uwrap_syscall),
+		unit_test(test_uwrap_getgroups),
+
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setuid),
 		unit_test(test_uwrap_setegid),
