@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #ifdef HAVE_SYS_SYSCALL_H
@@ -19,6 +20,8 @@
 #ifdef HAVE_SYSCALL_H
 #include <syscall.h>
 #endif
+
+#define ZERO_STRUCT(x) memset((char *)&(x), 0, sizeof(x))
 
 static void test_uwrap_seteuid(void **state)
 {
@@ -109,7 +112,8 @@ static void test_uwrap_syscall(void **state)
 {
 	long int rc;
 	char *env;
-	struct stat sb;
+	struct timeval tv1, tv2;
+	struct timezone tz1, tz2;
 
 	env = getenv("UID_WRAPPER");
 	if (env == NULL) {
@@ -119,16 +123,29 @@ static void test_uwrap_syscall(void **state)
 
 	(void) state; /* unused */
 
+	rc = syscall(SYS_getpid);
+	assert_int_equal(rc, getpid());
+
 	rc = access(".", R_OK);
 	assert_int_equal(rc, 0);
 
 	rc = syscall(SYS_access, ".", R_OK);
 	assert_int_equal(rc, 0);
 
-	rc = syscall(SYS_stat, ".", &sb);
+	ZERO_STRUCT(tv1);
+	ZERO_STRUCT(tv2);
+	ZERO_STRUCT(tz1);
+	ZERO_STRUCT(tz2);
+
+	rc = gettimeofday(&tv1, &tz1);
 	assert_int_equal(rc, 0);
 
-	assert_true(S_ISDIR(sb.st_mode));
+	rc = syscall(SYS_gettimeofday, &tv2, &tz2);
+	assert_int_equal(rc, 0);
+
+	assert_int_equal(tv1.tv_sec, tv2.tv_sec);
+	assert_int_equal(tz2.tz_dsttime, tz2.tz_dsttime);
+	assert_int_equal(tz2.tz_minuteswest, tz2.tz_minuteswest);
 }
 
 static void test_uwrap_syscall_setreuid(void **state)
