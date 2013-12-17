@@ -319,6 +319,15 @@ static int libc_setegid(gid_t egid)
 }
 #endif
 
+#ifdef HAVE_SETREGID
+static int libc_setregid(gid_t rgid, gid_t egid)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setregid);
+
+	return uwrap.libc.fns._libc_setregid(rgid, egid);
+}
+#endif
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -364,9 +373,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-#ifdef HAVE_SETREGID
-	*(void **) (&u->libc.fns._libc_setregid) = uwrap_libc_fn(u, "setregid");
-#endif
 #ifdef HAVE_SETRESGID
 	*(void **) (&u->libc.fns._libc_setresgid) = uwrap_libc_fn(u, "setresgid");
 #endif
@@ -779,7 +785,7 @@ int setegid(gid_t egid)
 int setregid(gid_t rgid, gid_t egid)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setregid(rgid, egid);
+		return libc_setregid(rgid, egid);
 	}
 
 	return uwrap_setresgid(rgid, egid, -1);
