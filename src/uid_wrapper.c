@@ -271,6 +271,15 @@ static int libc_seteuid(uid_t euid)
 }
 #endif
 
+#ifdef HAVE_SETREUID
+static int libc_setreuid(uid_t ruid, uid_t euid)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setreuid);
+
+	return uwrap.libc.fns._libc_setreuid(ruid, euid);
+}
+#endif
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -316,9 +325,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-#ifdef HAVE_SETREUID
-	*(void **) (&u->libc.fns._libc_setreuid) = uwrap_libc_fn(u, "setreuid");
-#endif
 #ifdef HAVE_SETRESUID
 	*(void **) (&u->libc.fns._libc_setresuid) = uwrap_libc_fn(u, "setresuid");
 #endif
@@ -588,7 +594,7 @@ int setreuid(uid_t ruid, uid_t euid)
 	}
 
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setreuid(ruid, euid);
+		return libc_setreuid(ruid, euid);
 	}
 
 	return uwrap_setresuid(ruid, euid, -1);
