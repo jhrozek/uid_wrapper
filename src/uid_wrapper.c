@@ -289,6 +289,13 @@ int libc_setresuid(uid_t ruid, uid_t euid, uid_t suid);
 }
 #endif
 
+static uid_t libc_geteuid(void)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, geteuid);
+
+	return uwrap.libc.fns._libc_geteuid();
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -333,8 +340,6 @@ static void uwrap_libc_init(struct uwrap *u)
 		exit(-1);
 	}
 #endif
-
-	*(void **) (&u->libc.fns._libc_geteuid) = uwrap_libc_fn(u, "geteuid");
 
 	*(void **) (&u->libc.fns._libc_setgid) = uwrap_libc_fn(u, "setgid");
 	*(void **) (&u->libc.fns._libc_getgid) = uwrap_libc_fn(u, "getgid");
@@ -483,7 +488,7 @@ static void uwrap_init(void)
 			uwrap.myuid = 0;
 			uwrap.mygid = 0;
 		} else {
-			uwrap.myuid = uwrap.libc.fns._libc_geteuid();
+			uwrap.myuid = libc_geteuid();
 			uwrap.mygid = uwrap.libc.fns._libc_getegid();
 		}
 
@@ -666,7 +671,7 @@ static uid_t uwrap_geteuid(void)
 uid_t geteuid(void)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_geteuid();
+		return libc_geteuid();
 	}
 
 	return uwrap_geteuid();
