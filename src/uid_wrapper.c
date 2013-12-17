@@ -161,6 +161,61 @@ static UWRAP_THREAD struct uwrap_thread *uwrap_tls_id;
 /* The mutex or accessing the id */
 static pthread_mutex_t uwrap_id_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+/*********************************************************
+ * UWRAP LIBC LOADER FUNCTIONS
+ *********************************************************/
+
+enum uwrap_lib {
+    UWRAP_LIBC,
+    UWRAP_LIBNSL,
+    UWRAP_LIBSOCKET,
+};
+
+static void *uwrap_load_lib_handle(enum uwrap_lib lib)
+{
+	int flags = RTLD_LAZY;
+	void *handle = NULL;
+	int i;
+
+#ifdef HAVE_APPLE
+	return RTLD_NEXT;
+#endif
+
+#ifdef RTLD_DEEPBIND
+	flags |= RTLD_DEEPBIND;
+#endif
+
+	switch (lib) {
+	case UWRAP_LIBNSL:
+		/* FALL TROUGH */
+	case UWRAP_LIBSOCKET:
+		/* FALL TROUGH */
+	case UWRAP_LIBC:
+		if (handle == NULL) {
+			for (handle = NULL, i = 10; handle == NULL && i >= 0; i--) {
+				char soname[256] = {0};
+
+				snprintf(soname, sizeof(soname), "libc.so.%d", i);
+				handle = dlopen(soname, flags);
+			}
+
+			uwrap.libc.handle = handle;
+		} else {
+			handle = uwrap.libc.handle;
+		}
+		break;
+	}
+
+	if (handle == NULL) {
+		fprintf(stderr,
+			"Failed to dlopen library: %s\n",
+			dlerror());
+		exit(-1);
+	}
+
+	return handle;
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
