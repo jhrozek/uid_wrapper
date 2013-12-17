@@ -255,6 +255,13 @@ static int libc_setuid(uid_t uid)
 	return uwrap.libc.fns._libc_setuid(uid);
 }
 
+static uid_t libc_getuid(void)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, getuid);
+
+	return uwrap.libc.fns._libc_getuid();
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -300,8 +307,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-	*(void **) (&u->libc.fns._libc_getuid) = uwrap_libc_fn(u, "getuid");
-
 #ifdef HAVE_SETEUID
 	*(void **) (&u->libc.fns._libc_seteuid) = uwrap_libc_fn(u, "seteuid");
 #endif
@@ -327,7 +332,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	*(void **) (&u->libc.fns._libc_getegid) = uwrap_libc_fn(u, "getegid");
 	*(void **) (&u->libc.fns._libc_getgroups) = uwrap_libc_fn(u, "getgroups");
 	*(void **) (&u->libc.fns._libc_setgroups) = uwrap_libc_fn(u, "setgroups");
-	*(void **) (&u->libc.fns._libc_getuid) = uwrap_libc_fn(u, "getuid");
 	*(void **) (&u->libc.fns._libc_getgid) = uwrap_libc_fn(u, "getgid");
 #ifdef HAVE_SYSCALL
 	*(void **) (&u->libc.fns._libc_syscall) = uwrap_libc_fn(u, "syscall");
@@ -614,7 +618,7 @@ static uid_t uwrap_getuid(void)
 uid_t getuid(void)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_getuid();
+		return libc_getuid();
 	}
 
 	return uwrap_getuid();
