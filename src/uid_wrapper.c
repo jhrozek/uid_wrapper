@@ -216,6 +216,30 @@ static void *uwrap_load_lib_handle(enum uwrap_lib lib)
 	return handle;
 }
 
+static void *_uwrap_load_lib_function(enum uwrap_lib lib, const char *fn_name)
+{
+	void *handle;
+	void *func;
+
+	handle = uwrap_load_lib_handle(lib);
+
+	func = dlsym(handle, fn_name);
+	if (func == NULL) {
+		fprintf(stderr,
+			"Failed to find %s: %s\n",
+			fn_name, dlerror());
+		exit(-1);
+	}
+
+	return func;
+}
+
+#define uwrap_load_lib_function(lib, fn_name) \
+	if (uwrap.libc.fns._libc_##fn_name == NULL) { \
+		*(void **) (&uwrap.libc.fns._libc_##fn_name) = \
+			_uwrap_load_lib_function(lib, #fn_name); \
+	}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
