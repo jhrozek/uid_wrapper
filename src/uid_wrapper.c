@@ -358,6 +358,33 @@ static int libc_setgroups(size_t size, const gid_t *list)
 	return uwrap.libc.fns._libc_setgroups(size, list);
 }
 
+#ifdef HAVE_SYSCALL
+static long int libc_vsyscall(long int sysno, va_list va)
+{
+	long int args[8];
+	long int rc;
+	int i;
+
+	uwrap_load_lib_function(UWRAP_LIBC, syscall);
+
+	for (i = 0; i < 8; i++) {
+		args[i] = va_arg(va, long int);
+	}
+
+	rc = uwrap.libc.fns._libc_syscall(sysno,
+					  args[0],
+					  args[1],
+					  args[2],
+					  args[3],
+					  args[4],
+					  args[5],
+					  args[6],
+					  args[7]);
+
+	return rc;
+}
+#endif
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -378,34 +405,6 @@ static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 	}
 
 	return func;
-}
-
-static void uwrap_libc_init(struct uwrap *u)
-{
-	unsigned int i = 0;
-#ifndef HAVE_APPLE
-	int flags = RTLD_LAZY;
-
-#ifdef RTLD_DEEPBIND
-	flags |= RTLD_DEEPBIND;
-#endif
-
-	for (u->libc.handle = NULL, i = 10; u->libc.handle == NULL; i--) {
-		char soname[256] = {0};
-
-		snprintf(soname, sizeof(soname), "%s.%u", LIBC_NAME, i);
-		u->libc.handle = dlopen(soname, flags);
-	}
-
-	if (u->libc.handle == NULL) {
-		printf("Failed to dlopen %s.%u: %s\n", LIBC_NAME, i, dlerror());
-		exit(-1);
-	}
-#endif
-
-#ifdef HAVE_SYSCALL
-	*(void **) (&u->libc.fns._libc_syscall) = uwrap_libc_fn(u, "syscall");
-#endif
 }
 
 static struct uwrap_thread *find_uwrap_id(pthread_t tid)
@@ -520,8 +519,6 @@ static void uwrap_init(void)
 		       &uwrap_thread_child);
 
 	pthread_mutex_lock(&uwrap_id_mutex);
-
-	uwrap_libc_init(&uwrap);
 
 	uwrap.initialised = true;
 	uwrap.enabled = false;
@@ -977,29 +974,6 @@ int getgroups(int size, gid_t *list)
 	}
 
 	return uwrap_getgroups(size, list);
-}
-
-static long int libc_vsyscall(long int sysno, va_list va)
-{
-	long int args[8];
-	long int rc;
-	int i;
-
-	for (i = 0; i < 8; i++) {
-		args[i] = va_arg(va, long int);
-	}
-
-	rc = uwrap.libc.fns._libc_syscall(sysno,
-					  args[0],
-					  args[1],
-					  args[2],
-					  args[3],
-					  args[4],
-					  args[5],
-					  args[6],
-					  args[7]);
-
-	return rc;
 }
 
 #if (defined(HAVE_SYS_SYSCALL_H) || defined(HAVE_SYSCALL_H)) \
