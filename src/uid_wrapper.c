@@ -296,6 +296,13 @@ static uid_t libc_geteuid(void)
 	return uwrap.libc.fns._libc_geteuid();
 }
 
+static int libc_setgid(gid_t gid)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setgid);
+
+	return uwrap.libc.fns._libc_setgid(gid);
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -341,7 +348,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-	*(void **) (&u->libc.fns._libc_setgid) = uwrap_libc_fn(u, "setgid");
 	*(void **) (&u->libc.fns._libc_getgid) = uwrap_libc_fn(u, "getgid");
 #ifdef HAVE_SETEGID
 	*(void **) (&u->libc.fns._libc_setegid) = uwrap_libc_fn(u, "setegid");
@@ -741,7 +747,7 @@ static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 int setgid(gid_t gid)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setgid(gid);
+		return libc_setgid(gid);
 	}
 
 	return uwrap_setresgid(gid, -1, -1);
