@@ -240,6 +240,21 @@ static void *_uwrap_load_lib_function(enum uwrap_lib lib, const char *fn_name)
 			_uwrap_load_lib_function(lib, #fn_name); \
 	}
 
+/*
+ * IMPORTANT
+ *
+ * Functions expeciall from libc need to be loaded individually, you can't load
+ * all at once or gdb will segfault at startup. The same applies to valgrind and
+ * has probably something todo with with the linker.
+ * So we need load each function at the point it is called the first time.
+ */
+static int libc_setuid(uid_t uid)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setuid);
+
+	return uwrap.libc.fns._libc_setuid(uid);
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -285,7 +300,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-	*(void **) (&u->libc.fns._libc_setuid) = uwrap_libc_fn(u, "setuid");
 	*(void **) (&u->libc.fns._libc_getuid) = uwrap_libc_fn(u, "getuid");
 
 #ifdef HAVE_SETEUID
@@ -533,7 +547,7 @@ static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 int setuid(uid_t uid)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setuid(uid);
+		return libc_setuid(uid);
 	}
 
 	return uwrap_setresuid(uid, -1, -1);
