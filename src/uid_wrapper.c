@@ -351,6 +351,13 @@ static int libc_getgroups(int size, gid_t list[])
 	return uwrap.libc.fns._libc_getgroups(size, list);
 }
 
+static int libc_setgroups(size_t size, const gid_t *list)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setgroups);
+
+	return uwrap.libc.fns._libc_setgroups(size, list);
+}
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -396,7 +403,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-	*(void **) (&u->libc.fns._libc_setgroups) = uwrap_libc_fn(u, "setgroups");
 #ifdef HAVE_SYSCALL
 	*(void **) (&u->libc.fns._libc_syscall) = uwrap_libc_fn(u, "syscall");
 #endif
@@ -932,7 +938,7 @@ int setgroups(size_t size, const gid_t *list)
 #endif
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setgroups(size, list);
+		return libc_setgroups(size, list);
 	}
 
 	return uwrap_setgroups(size, list);
