@@ -105,7 +105,7 @@ struct uwrap_libc_fns {
 #ifdef HAVE_SETREGID
 	int (*_libc_setregid)(uid_t rgid, uid_t egid);
 #endif
-#ifdef HAVE_SETREGID
+#ifdef HAVE_SETRESGID
 	int (*_libc_setresgid)(uid_t rgid, uid_t egid, uid_t sgid);
 #endif
 	gid_t (*_libc_getegid)(void);
@@ -328,6 +328,15 @@ static int libc_setregid(gid_t rgid, gid_t egid)
 }
 #endif
 
+#ifdef HAVE_SETRESGID
+static int libc_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
+{
+	uwrap_load_lib_function(UWRAP_LIBC, setresgid);
+
+	return uwrap.libc.fns._libc_setresgid(rgid, egid, sgid);
+}
+#endif
+
 static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
 {
 	void *func;
@@ -373,9 +382,6 @@ static void uwrap_libc_init(struct uwrap *u)
 	}
 #endif
 
-#ifdef HAVE_SETRESGID
-	*(void **) (&u->libc.fns._libc_setresgid) = uwrap_libc_fn(u, "setresgid");
-#endif
 	*(void **) (&u->libc.fns._libc_getegid) = uwrap_libc_fn(u, "getegid");
 	*(void **) (&u->libc.fns._libc_getgroups) = uwrap_libc_fn(u, "getgroups");
 	*(void **) (&u->libc.fns._libc_setgroups) = uwrap_libc_fn(u, "setgroups");
@@ -796,7 +802,7 @@ int setregid(gid_t rgid, gid_t egid)
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 {
 	if (!uwrap_enabled()) {
-		return uwrap.libc.fns._libc_setregid(rgid, egid, sgid);
+		return libc_setresgid(rgid, egid, sgid);
 	}
 
 	return uwrap_setresgid(rgid, egid, sgid);
