@@ -385,27 +385,9 @@ static long int libc_vsyscall(long int sysno, va_list va)
 }
 #endif
 
-static void *uwrap_libc_fn(struct uwrap *u, const char *fn_name)
-{
-	void *func;
-
-#ifdef HAVE_APPLE
-	func = dlsym(RTLD_NEXT, fn_name);
-#else
-	if (u->libc.handle == NULL) {
-		return NULL;
-	}
-
-	func = dlsym(u->libc.handle, fn_name);
-#endif
-	if (func == NULL) {
-		printf("Failed to find %s in %s: %s\n",
-				fn_name, LIBC_NAME, dlerror());
-		exit(-1);
-	}
-
-	return func;
-}
+/*********************************************************
+ * UWRAP ID HANDLING
+ *********************************************************/
 
 static struct uwrap_thread *find_uwrap_id(pthread_t tid)
 {
