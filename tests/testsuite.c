@@ -90,6 +90,25 @@ static void test_uwrap_setegid(void **state)
 	assert_int_equal(u, 42);
 }
 
+#ifdef HAVE_SETREGID
+static void test_uwrap_setregid(void **state)
+{
+	int rc;
+	uid_t u;
+
+	(void) state; /* unused */
+
+	rc = setregid(1, 2);
+	assert_int_equal(rc, 0);
+
+	u = getgid();
+	assert_int_equal(u, 1);
+
+	u = getegid();
+	assert_int_equal(u, 2);
+}
+#endif
+
 static void test_uwrap_setgid(void **state)
 {
 	int rc;
@@ -223,6 +242,9 @@ int main(void) {
 		unit_test(test_uwrap_seteuid),
 		unit_test(test_uwrap_setuid),
 		unit_test(test_uwrap_setegid),
+#ifdef HAVE_SETREGID
+		unit_test(test_uwrap_setregid),
+#endif
 		unit_test(test_uwrap_setgid),
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
