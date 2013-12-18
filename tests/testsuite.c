@@ -30,13 +30,6 @@ static void test_uwrap_seteuid(void **state)
 {
 	int rc;
 	uid_t u;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -62,13 +55,6 @@ static void test_uwrap_setuid(void **state)
 {
 	int rc;
 	uid_t u;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -86,13 +72,6 @@ static void test_uwrap_setegid(void **state)
 {
 	int rc;
 	uid_t u;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -115,13 +94,6 @@ static void test_uwrap_setgid(void **state)
 {
 	int rc;
 	gid_t u;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -138,15 +110,8 @@ static void test_uwrap_setgid(void **state)
 static void test_uwrap_syscall(void **state)
 {
 	long int rc;
-	char *env;
 	struct timeval tv1, tv2;
 	struct timezone tz1, tz2;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -179,13 +144,6 @@ static void test_uwrap_syscall_setreuid(void **state)
 {
 	long int rc;
 	uid_t u;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
@@ -208,13 +166,6 @@ static void test_uwrap_syscall_setregid(void **state)
 {
 	long int rc;
 	gid_t g;
-	char *env;
-
-	env = getenv("UID_WRAPPER");
-	if (env == NULL) {
-		printf("UID_WRAPPER env not set, uid_wrapper is disabled\n");
-		return;
-	}
 
 	(void) state; /* unused */
 
