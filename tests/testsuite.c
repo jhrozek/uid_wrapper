@@ -289,6 +289,29 @@ static void test_uwrap_setgroups(void **state)
 	assert_memory_equal(glist, rlist, sizeof(glist));
 }
 
+#if defined(SYS_setgroups) || defined(SYS_setroups32)
+static void test_uwrap_syscall_setgroups(void **state)
+{
+	gid_t glist[] = { 100, 200, 300, 400, 500 };
+	gid_t rlist[16];
+	int rc = -1;
+
+	(void) state; /* unused */
+
+#ifdef SYS_setgroups
+	rc = syscall(SYS_setgroups, ARRAY_SIZE(glist), glist);
+#elif SYS_setgroups32
+	rc = syscall(SYS_setgroups32, ARRAY_SIZE(glist), glist);
+#endif
+	assert_int_equal(rc, 0);
+
+	rc = getgroups(ARRAY_SIZE(rlist), rlist);
+	assert_int_equal(rc, 5);
+
+	assert_memory_equal(glist, rlist, sizeof(glist));
+}
+#endif
+
 int main(void) {
 	int rc;
 
@@ -315,6 +338,9 @@ int main(void) {
 		unit_test(test_uwrap_syscall_setreuid),
 		unit_test(test_uwrap_syscall_setregid),
 		unit_test(test_uwrap_setgroups),
+#if defined(SYS_setgroups) || defined(SYS_setroups32)
+		unit_test(test_uwrap_syscall_setgroups),
+#endif
 	};
 
 	rc = run_tests(tests);
