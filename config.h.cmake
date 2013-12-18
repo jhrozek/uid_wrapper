@@ -29,7 +29,7 @@
 #cmakedefine HAVE_SETREUID 1
 
 /* Define to 1 if you have the `setresuid' function. */
-#cmakedefine HAVE_SETREUID 1
+#cmakedefine HAVE_SETRESUID 1
 
 /* Define to 1 if you have the `setegid' function. */
 #cmakedefine HAVE_SETEGID 1
@@ -38,7 +38,7 @@
 #cmakedefine HAVE_SETREGID 1
 
 /* Define to 1 if you have the `setresgid' function. */
-#cmakedefine HAVE_SETREGID 1
+#cmakedefine HAVE_SETRESGID 1
 
 /* Define to 1 if you have the `setgroups' function. */
 #cmakedefine HAVE_SETGROUPS 1
