@@ -281,7 +281,7 @@ static int libc_setreuid(uid_t ruid, uid_t euid)
 #endif
 
 #ifdef HAVE_SETRESUID
-int libc_setresuid(uid_t ruid, uid_t euid, uid_t suid);
+static int libc_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
 	uwrap_load_lib_function(UWRAP_LIBC, setresuid);
 
