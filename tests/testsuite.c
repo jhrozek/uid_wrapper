@@ -323,7 +323,7 @@ int main(void) {
 #ifdef HAVE_SETREUID
 		unit_test(test_uwrap_setreuid),
 #endif
-#ifdef HAVE_SETREUID
+#ifdef HAVE_SETRESUID
 		unit_test(test_uwrap_setresuid),
 #endif
 		unit_test(test_uwrap_setuid),

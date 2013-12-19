@@ -60,11 +60,11 @@ check_function_exists(snprintf HAVE_SNPRINTF)
 
 check_function_exists(seteuid HAVE_SETEUID)
 check_function_exists(setreuid HAVE_SETREUID)
-check_function_exists(setreuid HAVE_SETRESUID)
+check_function_exists(setresuid HAVE_SETRESUID)
 
 check_function_exists(setegid HAVE_SETEGID)
 check_function_exists(setregid HAVE_SETREGID)
-check_function_exists(setregid HAVE_SETRESGID)
+check_function_exists(setresgid HAVE_SETRESGID)
 
 check_function_exists(getgroups HAVE_GETGROUPS)
 check_function_exists(setgroups HAVE_SETGROUPS)
