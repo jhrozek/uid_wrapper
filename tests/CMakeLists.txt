@@ -32,3 +32,10 @@ endif(LINUX)
 if (LINUX)
     add_executable(getuids getuids.c)
 endif (LINUX)
+
+add_cmocka_test(test_uwrap_disabled test_uwrap_disabled.c ${CMOCKA_LIBRARY})
+set_property(
+    TEST
+        test_uwrap_disabled
+    PROPERTY
+        ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so)
