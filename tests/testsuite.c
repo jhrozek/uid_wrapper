@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <pwd.h>
 #include <grp.h>
 
 #ifdef HAVE_SYS_SYSCALL_H
