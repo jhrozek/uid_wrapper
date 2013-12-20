@@ -67,6 +67,8 @@ static void test_syscall_setreuid(void **state)
 	for (i = 0; i < NUM_THREADS; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
+	free(threads);
 }
 
 static void *sync_setreuid(void *arg)
@@ -132,6 +134,9 @@ static void test_sync_setreuid(void **state)
 	for (i = 0; i < NUM_THREADS; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
+	free(threads);
+	free(p);
 }
 
 int main(void) {
