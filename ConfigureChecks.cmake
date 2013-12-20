@@ -131,6 +131,17 @@ int main(void) {
     return 0;
 }" HAVE_GCC_THREAD_LOCAL_STORAGE)
 
+check_c_source_compiles("
+void test_destructor_attribute(void) __attribute__ ((destructor));
+
+void test_destructor_attribute(void)
+{
+    return;
+}
+
+int main(void) {
+    return 0;
+}" HAVE_DESTRUCTOR_ATTRIBUTE)
 
 # SYSTEM LIBRARIES
 

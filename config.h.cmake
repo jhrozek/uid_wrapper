@@ -57,6 +57,7 @@
 #cmakedefine HAVE_LINUX_32BIT_SYSCALLS 1
 
 #cmakedefine HAVE_GCC_THREAD_LOCAL_STORAGE 1
+#cmakedefine HAVE_DESTRUCTOR_ATTRIBUTE 1
 
 /*************************** ENDIAN *****************************/
 
