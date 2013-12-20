@@ -859,16 +859,17 @@ static int uwrap_setgroups_thread(size_t size, const gid_t *list)
 	int rc = -1;
 
 	pthread_mutex_lock(&uwrap_id_mutex);
-	free(id->groups);
-	id->groups = NULL;
-	id->ngroups = 0;
 
-	if (size != 0) {
-		id->groups = malloc(sizeof(gid_t) * size);
-		if (id->groups == NULL) {
+	if (size > 0) {
+		gid_t *tmp;
+
+		tmp = realloc(id->groups, sizeof(gid_t) * size);
+		if (tmp == NULL) {
 			errno = ENOMEM;
 			goto out;
 		}
+		id->groups = tmp;
+
 		id->ngroups = size;
 		memcpy(id->groups, list, size * sizeof(gid_t));
 	}
@@ -886,17 +887,18 @@ static int uwrap_setgroups(size_t size, const gid_t *list)
 	int rc = -1;
 
 	pthread_mutex_lock(&uwrap_id_mutex);
-	for (id = uwrap.ids; id; id = id->next) {
-		free(id->groups);
-		id->groups = NULL;
-		id->ngroups = 0;
 
-		if (size != 0) {
-			id->groups = malloc(sizeof(gid_t) * size);
-			if (id->groups == NULL) {
+	if (size > 0) {
+		for (id = uwrap.ids; id; id = id->next) {
+			gid_t *tmp;
+
+			tmp = realloc(id->groups, sizeof(gid_t) * size);
+			if (tmp == NULL) {
 				errno = ENOMEM;
 				goto out;
 			}
+			id->groups = tmp;
+
 			id->ngroups = size;
 			memcpy(id->groups, list, size * sizeof(gid_t));
 		}
