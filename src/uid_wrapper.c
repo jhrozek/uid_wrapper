@@ -427,6 +427,15 @@ static int uwrap_new_id(pthread_t tid, bool do_alloc)
 			errno = ENOMEM;
 			return -1;
 		}
+
+		id->groups = malloc(sizeof(gid_t) * 1);
+		if (id->groups == NULL) {
+			errno = ENOMEM;
+			return -1;
+		}
+
+		UWRAP_DLIST_ADD(uwrap.ids, id);
+		uwrap_tls_id = id;
 	}
 
 	id->tid = tid;
@@ -436,13 +445,7 @@ static int uwrap_new_id(pthread_t tid, bool do_alloc)
 	id->rgid = id->egid = id->sgid = uwrap.mygid;
 
 	id->ngroups = 1;
-	id->groups = malloc(sizeof(gid_t) * id->ngroups);
 	id->groups[0] = uwrap.mygid;
-
-	if (do_alloc) {
-		UWRAP_DLIST_ADD(uwrap.ids, id);
-		uwrap_tls_id = id;
-	}
 
 	return 0;
 }
