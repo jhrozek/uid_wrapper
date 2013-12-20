@@ -43,6 +43,12 @@
 # define UWRAP_THREAD
 #endif
 
+#ifdef HAVE_DESTRUCTOR_ATTRIBUTE
+#define DESTRUCTOR_ATTRIBUTE __attribute__ ((destructor))
+#else
+#define DESTRUCTOR_ATTRIBUTE
+#endif /* HAVE_DESTRUCTOR_ATTRIBUTE */
+
 #ifdef NDEBUG
 #define UWRAP_DEBUG(...)
 #else
@@ -79,6 +85,10 @@
 	(item)->prev	= NULL; \
 	(item)->next	= NULL; \
 } while (0)
+
+#ifndef SAFE_FREE
+#define SAFE_FREE(x) do { if ((x) != NULL) {free(x); (x)=NULL;} } while(0)
+#endif
 
 #define LIBC_NAME "libc.so"
 
@@ -160,6 +170,12 @@ static UWRAP_THREAD struct uwrap_thread *uwrap_tls_id;
 
 /* The mutex or accessing the id */
 static pthread_mutex_t uwrap_id_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/*********************************************************
+ * UWRAP PROTOTYPES
+ *********************************************************/
+
+void uwrap_destructor(void) DESTRUCTOR_ATTRIBUTE;
 
 /*********************************************************
  * UWRAP LIBC LOADER FUNCTIONS
@@ -1128,3 +1144,29 @@ long int syscall (long int sysno, ...)
 }
 #endif /* HAVE_SYSCALL */
 #endif /* HAVE_SYS_SYSCALL_H || HAVE_SYSCALL_H */
+
+/****************************
+ * DESTRUCTOR
+ ***************************/
+
+/*
+ * This function is called when the library is unloaded and makes sure that
+ * resources are freed.
+ */
+void uwrap_destructor(void)
+{
+	struct uwrap_thread *u = uwrap.ids;
+
+	while (u != NULL) {
+		UWRAP_DLIST_REMOVE(uwrap.ids, u);
+
+		SAFE_FREE(u->groups);
+		SAFE_FREE(u);
+
+		u = uwrap.ids;
+	}
+
+	if (uwrap.libc.handle != NULL) {
+		dlclose(uwrap.libc.handle);
+	}
+}
