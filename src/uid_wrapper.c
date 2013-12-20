@@ -191,6 +191,7 @@ static void *uwrap_load_lib_handle(enum uwrap_lib lib)
 	case UWRAP_LIBSOCKET:
 		/* FALL TROUGH */
 	case UWRAP_LIBC:
+		handle = uwrap.libc.handle;
 		if (handle == NULL) {
 			for (handle = NULL, i = 10; handle == NULL && i >= 0; i--) {
 				char soname[256] = {0};
@@ -200,8 +201,6 @@ static void *uwrap_load_lib_handle(enum uwrap_lib lib)
 			}
 
 			uwrap.libc.handle = handle;
-		} else {
-			handle = uwrap.libc.handle;
 		}
 		break;
 	}
