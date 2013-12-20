@@ -494,7 +494,7 @@ static void uwrap_init(void)
 		pthread_mutex_lock(&uwrap_id_mutex);
 		id = find_uwrap_id(tid);
 		if (id == NULL) {
-			rc = uwrap_new_id(tid, 1);
+			rc = uwrap_new_id(tid, true);
 			if (rc < 0) {
 				exit(-1);
 			}
@@ -502,7 +502,7 @@ static void uwrap_init(void)
 			/* We reuse an old thread id */
 			uwrap_tls_id = id;
 
-			uwrap_new_id(tid, 0);
+			uwrap_new_id(tid, false);
 		}
 		pthread_mutex_unlock(&uwrap_id_mutex);
 
@@ -536,7 +536,7 @@ static void uwrap_init(void)
 			uwrap.mygid = libc_getegid();
 		}
 
-		rc = uwrap_new_id(tid, 1);
+		rc = uwrap_new_id(tid, true);
 		if (rc < 0) {
 			exit(-1);
 		}
