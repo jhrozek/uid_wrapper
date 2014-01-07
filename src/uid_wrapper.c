@@ -697,7 +697,7 @@ uid_t getuid(void)
  */
 static uid_t uwrap_geteuid(void)
 {
-	const char *env = getenv("UID_WRAPPER_ROOT");
+	const char *env = getenv("UID_WRAPPER_MYUID");
 	struct uwrap_thread *id = uwrap_tls_id;
 	uid_t uid;
 
@@ -706,7 +706,7 @@ static uid_t uwrap_geteuid(void)
 	pthread_mutex_unlock(&uwrap_id_mutex);
 
 	/* Disable root and return myuid */
-	if (env != NULL && env[0] == '2') {
+	if (env != NULL && env[0] == '1') {
 		uid = uwrap.myuid;
 	}
 

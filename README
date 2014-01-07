@@ -16,5 +16,5 @@ loaded. If you need the application to think it is root at startup you can set:
 
 UID_WRAPPER_ROOT=1
 
-If you set the environment variable to UID_WRAPPER_ROOT=2 before you call
+If you set the environment variable to UID_WRAPPER_MYUID=1 before you call
 geteuid() then it will return the real uid.
