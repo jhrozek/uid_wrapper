@@ -19,6 +19,14 @@ set_property(
     PROPERTY
         ENVIRONMENT ${TEST_ENVIRONMENT})
 
+add_library(uwrap_enabled SHARED uwrap_enabled.c)
+add_cmocka_test(test_uwrap_enabled test_uwrap_enabled.c ${CMOCKA_LIBRARY} uwrap_enabled)
+set_property(
+    TEST
+        test_uwrap_enabled
+    PROPERTY
+        ENVIRONMENT ${TEST_ENVIRONMENT})
+
 if (LINUX)
 add_cmocka_test(test_glibc_thread_support test_glibc_thread_support.c ${CMOCKA_LIBRARY})
 target_link_libraries(test_glibc_thread_support ${CMAKE_THREAD_LIBS_INIT})

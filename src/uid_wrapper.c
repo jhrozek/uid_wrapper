@@ -175,6 +175,7 @@ static pthread_mutex_t uwrap_id_mutex = PTHREAD_MUTEX_INITIALIZER;
  * UWRAP PROTOTYPES
  *********************************************************/
 
+int uwrap_enabled(void);
 void uwrap_destructor(void) DESTRUCTOR_ATTRIBUTE;
 
 /*********************************************************
@@ -547,7 +548,7 @@ static void uwrap_init(void)
 	pthread_mutex_unlock(&uwrap_id_mutex);
 }
 
-static int uwrap_enabled(void)
+int uwrap_enabled(void)
 {
 	uwrap_init();
 
