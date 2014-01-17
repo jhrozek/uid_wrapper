@@ -175,7 +175,7 @@ static pthread_mutex_t uwrap_id_mutex = PTHREAD_MUTEX_INITIALIZER;
  * UWRAP PROTOTYPES
  *********************************************************/
 
-int uwrap_enabled(void);
+int uid_wrapper_enabled(void);
 void uwrap_destructor(void) DESTRUCTOR_ATTRIBUTE;
 
 /*********************************************************
@@ -548,7 +548,7 @@ static void uwrap_init(void)
 	pthread_mutex_unlock(&uwrap_id_mutex);
 }
 
-int uwrap_enabled(void)
+int uid_wrapper_enabled(void)
 {
 	uwrap_init();
 
@@ -618,7 +618,7 @@ static int uwrap_setresuid(uid_t ruid, uid_t euid, uid_t suid)
  */
 int setuid(uid_t uid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setuid(uid);
 	}
 
@@ -633,7 +633,7 @@ int seteuid(uid_t euid)
 		return -1;
 	}
 
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_seteuid(euid);
 	}
 
@@ -649,7 +649,7 @@ int setreuid(uid_t ruid, uid_t euid)
 		return -1;
 	}
 
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setreuid(ruid, euid);
 	}
 
@@ -660,7 +660,7 @@ int setreuid(uid_t ruid, uid_t euid)
 #ifdef HAVE_SETRESUID
 int setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setresuid(ruid, euid, suid);
 	}
 
@@ -685,7 +685,7 @@ static uid_t uwrap_getuid(void)
 
 uid_t getuid(void)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_getuid();
 	}
 
@@ -715,7 +715,7 @@ static uid_t uwrap_geteuid(void)
 
 uid_t geteuid(void)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_geteuid();
 	}
 
@@ -785,7 +785,7 @@ static int uwrap_setresgid(gid_t rgid, gid_t egid, gid_t sgid)
  */
 int setgid(gid_t gid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setgid(gid);
 	}
 
@@ -795,7 +795,7 @@ int setgid(gid_t gid)
 #ifdef HAVE_SETEGID
 int setegid(gid_t egid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setegid(egid);
 	}
 
@@ -806,7 +806,7 @@ int setegid(gid_t egid)
 #ifdef HAVE_SETREGID
 int setregid(gid_t rgid, gid_t egid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setregid(rgid, egid);
 	}
 
@@ -817,7 +817,7 @@ int setregid(gid_t rgid, gid_t egid)
 #ifdef HAVE_SETRESGID
 int setresgid(gid_t rgid, gid_t egid, gid_t sgid)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setresgid(rgid, egid, sgid);
 	}
 
@@ -842,7 +842,7 @@ static gid_t uwrap_getgid(void)
 
 gid_t getgid(void)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_getgid();
 	}
 
@@ -866,7 +866,7 @@ static uid_t uwrap_getegid(void)
 
 uid_t getegid(void)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_getegid();
 	}
 
@@ -937,7 +937,7 @@ int setgroups(int size, const gid_t *list)
 int setgroups(size_t size, const gid_t *list)
 #endif
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_setgroups(size, list);
 	}
 
@@ -972,7 +972,7 @@ out:
 
 int getgroups(int size, gid_t *list)
 {
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		return libc_getgroups(size, list);
 	}
 
@@ -1135,7 +1135,7 @@ long int syscall (long int sysno, ...)
 
 	va_start(va, sysno);
 
-	if (!uwrap_enabled()) {
+	if (!uid_wrapper_enabled()) {
 		rc = libc_vsyscall(sysno, va);
 		va_end(va);
 		return rc;

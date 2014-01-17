@@ -5,15 +5,15 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
-int uwrap_enabled(void);
+int uid_wrapper_enabled(void);
 
-static void test_uwrap_enabled(void **state)
+static void test_uid_wrapper_enabled(void **state)
 {
     int rc;
 
     (void)state; /* unused */
 
-    rc = uwrap_enabled();
+    rc = uid_wrapper_enabled();
     assert_int_equal(rc, 1);
 }
 
@@ -21,7 +21,7 @@ int main(void) {
 	int rc;
 
 	const UnitTest tests[] = {
-		unit_test(test_uwrap_enabled),
+		unit_test(test_uid_wrapper_enabled),
 	};
 
 	rc = run_tests(tests);
