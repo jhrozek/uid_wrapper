@@ -1,8 +1,13 @@
 UID wrapper library
 ====================
 
-This library intercepts seteuid and related calls, and simulates them
-in a manner similar to the nss_wrapper and socket_wrapper libraries.
+Privilege separation - Some projects like a file server need privilege
+separation to be able to switch to the connnection user and do file operations.
+uid_wrapper convincingly lies to the application letting it believe it is
+operating as root and even switching betwen uids and gids as needed.
+
+More precise this library intercepts seteuid and related calls, and simulates
+them in a manner similar to the nss_wrapper and socket_wrapper libraries.
 
 This allows you to do user switching when testing e.g. file servers.
 
@@ -18,3 +23,20 @@ UID_WRAPPER_ROOT=1
 
 If you set the environment variable to UID_WRAPPER_MYUID=1 before you call
 geteuid() then it will return the real uid.
+
+To find out if uid_wrapper is enabled, we suggest to implment the following
+function in a library your application loads:
+
+int uid_wrapper_enabled(void)
+{
+    return 0;
+}
+
+Then you can use:
+
+if (uid_wrapper_enabled()) {
+    /* special uid_wrapper handling code */
+}
+
+uid_wrapper implements this funciton too and it will be loaded before your
+library gets loaded.
