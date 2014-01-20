@@ -58,6 +58,17 @@ install(
     pkgconfig
 )
 
+# cmake config files
+configure_file(uid_wrapper-config-version.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/uid_wrapper-config-version.cmake @ONLY)
+install(
+    FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/uid_wrapper-config-version.cmake
+    DESTINATION
+        ${CMAKE_INSTALL_DIR}
+    COMPONENT
+        devel
+)
+
 # check subdirectories
 add_subdirectory(src)
 
