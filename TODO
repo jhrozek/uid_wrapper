@@ -1,0 +1,14 @@
+TODO
+=====
+
+Library:
+---------
+
+Testing:
+---------
+
+* More threading tests for linux.
+* Add missing tests.
+  Check the code coverage on
+  http://mock.cryptomilk.org/index.php?project=uidwrapper
+  to see what tests are still needed.
