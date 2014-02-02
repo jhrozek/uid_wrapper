@@ -1,6 +1,8 @@
-int uid_wrapper_enabled(void);
+#include <stdbool.h>
 
-int uid_wrapper_enabled(void)
+bool uid_wrapper_enabled(void);
+
+bool uid_wrapper_enabled(void)
 {
-    return 0;
+	return false;
 }
