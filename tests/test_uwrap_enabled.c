@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-int uid_wrapper_enabled(void);
+bool uid_wrapper_enabled(void);
 
 static void test_uid_wrapper_enabled(void **state)
 {
