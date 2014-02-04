@@ -47,7 +47,18 @@ find_package(Threads)
 include(ConfigureChecks.cmake)
 configure_file(config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
+# check subdirectories
+add_subdirectory(src)
+
+if (UNIT_TESTING)
+    find_package(CMocka REQUIRED)
+    include(AddCMockaTest)
+    add_subdirectory(tests)
+endif (UNIT_TESTING)
+
 # pkg-config file
+get_filename_component(UID_WRAPPER_LIB ${UID_WRAPPER_LOCATION} NAME)
+
 configure_file(uid_wrapper.pc.cmake ${CMAKE_CURRENT_BINARY_DIR}/uid_wrapper.pc @ONLY)
 install(
   FILES
@@ -68,12 +79,3 @@ install(
     COMPONENT
         devel
 )
-
-# check subdirectories
-add_subdirectory(src)
-
-if (UNIT_TESTING)
-    find_package(CMocka REQUIRED)
-    include(AddCMockaTest)
-    add_subdirectory(tests)
-endif (UNIT_TESTING)
