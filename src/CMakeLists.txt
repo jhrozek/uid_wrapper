@@ -22,5 +22,6 @@ install(
 )
 
 # This needs to be at the end
+cmake_policy(SET CMP0026 OLD)
 get_target_property(UWRAP_LOCATION uid_wrapper LOCATION)
 set(UID_WRAPPER_LOCATION ${UWRAP_LOCATION} PARENT_SCOPE)
