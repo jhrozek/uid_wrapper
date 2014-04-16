@@ -77,7 +77,7 @@ install(
         ${CMAKE_CURRENT_BINARY_DIR}/uid_wrapper-config-version.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/uid_wrapper-config.cmake
     DESTINATION
-        ${CMAKE_INSTALL_DIR}
+        ${CMAKE_INSTALL_DIR}/uid_wrapper
     COMPONENT
         devel
 )
