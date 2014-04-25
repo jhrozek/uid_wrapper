@@ -22,7 +22,7 @@ install(
 )
 
 # This needs to be at the end
-if (CMAKE_VERSION VERSION_GREATER 2.8.13)
+if (POLICY CMP0026)
     cmake_policy(SET CMP0026 OLD)
 endif()
 get_target_property(UWRAP_LOCATION uid_wrapper LOCATION)
