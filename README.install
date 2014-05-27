@@ -1,0 +1,78 @@
+Obtaining the sources
+=====================
+
+Source tarballs for uid_wrapper can be downloaded from
+
+  https://ftp.samba.org/pub/cwrap/
+
+The source code repository for socket wrapper is located under
+
+  git://git.samba.org/uid_wrapper.git
+
+To create a local copy, run
+
+  $ git clone git://git.samba.org/uid_wrapper.git
+  $ cd uid_wrapper
+
+Building from sources
+=====================
+
+uid_wrapper uses cmake (www.cmake.org) as its build system.
+
+In an unpacked sources base directory, create a directory to
+contain the build results, e.g.
+
+  $ mkdir obj
+  $ cd obj
+
+Note that "obj" is just an example. The directory can
+be named arbitrarily.
+
+Next, run cmake to configure the build, e.g.
+
+  $ cmake -DCMAKE_INSTALL_PREFIX=<prefix> ..
+
+or on a 64 bit red hat system:
+
+  $  cmake -DCMAKE_INSTALL_PREFIX=<prefix> -DLIB_SUFFIX=64 ..
+
+The "<prefix>" should be replaced by the intended installation
+target prefix directory, typically /usr or /usr/local.
+
+Note that the target directory does not have to be a direct
+or indirect subdirectory of the source base directory: It can
+be an arbitrary directory in the system. In the general case,
+".." has to be replaced by a relative or absolute path of the
+source base directory in the "cmake" command line.
+
+One can control the build type with "-DCMAKE_BUILD_TYPE=<mode>"
+where <mode> can be one of Debug, Release, RelWithDebInfo, and
+some more (see cmake.org). The default is "RelWithDebInfo".
+
+After configuring with cmake, run the build with
+
+  $ make
+
+Unit testing
+============
+
+In order to support running the test suite after building,
+the cmocka unit test framework needs to be installed (cmocka.org),
+and you need to specify
+
+  -DUNIT_TESTING=ON
+
+in the cmake run. After running "make",
+
+  $ make test
+
+runs the test suite.
+
+Installing
+==========
+
+uid_wrapper is installed into the prefix directory
+after running "cmake" and "make" with
+
+  $ make install
+
