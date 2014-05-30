@@ -58,6 +58,7 @@
 
 #cmakedefine HAVE_GCC_THREAD_LOCAL_STORAGE 1
 #cmakedefine HAVE_DESTRUCTOR_ATTRIBUTE 1
+#cmakedefine HAVE_FUNCTION_ATTRIBUTE_FORMAT 1
 
 /*************************** ENDIAN *****************************/
 

@@ -143,6 +143,13 @@ int main(void) {
     return 0;
 }" HAVE_DESTRUCTOR_ATTRIBUTE)
 
+check_c_source_compiles("
+void log_fn(const char *format, ...) __attribute__ ((format (printf, 1, 2)));
+
+int main(void) {
+    return 0;
+}" HAVE_FUNCTION_ATTRIBUTE_FORMAT)
+
 # SYSTEM LIBRARIES
 
 check_library_exists(dl dlopen "" HAVE_LIBDL)
