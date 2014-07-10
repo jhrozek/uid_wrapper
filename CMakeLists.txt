@@ -81,3 +81,5 @@ install(
     COMPONENT
         devel
 )
+
+add_subdirectory(doc)

@@ -1,0 +1,3 @@
+The manpage is written with asciidoc. To generate the manpage use:
+
+a2x --doctype manpage --format manpage doc/uid_wrapper.1.txt

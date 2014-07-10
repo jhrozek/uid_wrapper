@@ -1,0 +1,56 @@
+uid_wrapper(1)
+==============
+
+NAME
+----
+
+uid_wrapper - A wrapper to fake privilege separation
+
+SYNOPSIS
+--------
+
+LD_PRELOAD=libuid_wrapper.so UID_WRAPPER=1 UID_WRAPPER_ROOT=1 *./myapplication*
+
+DESCRIPTION
+-----------
+
+- Allows uid switching as a normal user.
+- Start any application making it believe it is running as root.
+- Support for user/group changing in the local thread using the syscalls (like glibc).
+- More precisely this library intercepts seteuid and related calls, and simulates
+  them in a manner similar to the nss_wrapper and socket_wrapper libraries.
+
+Some projects like a file server need privilege separation to be able to switch
+to the connection user and do file operations. uid_wrapper convincingly lies to
+the application letting it believe it is operating as root and even switching
+between UIDs and GIDs as needed.
+
+ENVIRONMENT VARIABLES
+---------------------
+
+*UID_WRAPPER*::
+
+If you load the uid_wrapper and enable it with setting UID_WRAPPER=1 all setuid
+and setgid will work, even as a normal user.
+
+*UID_WRAPPER_ROOT*::
+
+It is possible to start your application as fake root with setting
+UID_WRAPPER_ROOT=1.
+
+*UID_WRAPPER_DEBUGLEVEL*::
+
+If you need to see what is going on in uid_wrapper itself or try to find a
+bug, you can enable logging support in uid_wrapper if you built it with
+debug symbols.
+
+- 0 = ERROR
+- 1 = WARNING
+- 2 = DEBUG
+- 3 = TRACE
+
+EXAMPLE
+-------
+
+  $ LD_PRELOAD=libuid_wrapper.so UID_WRAPPER=1 UID_WRAPPER_ROOT=1 id
+  uid=0(root) gid=0(root) groups=100(users),0(root)

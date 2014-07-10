@@ -1,42 +1,24 @@
-UID wrapper library
-====================
+UID_WRAPPER
+===========
 
-Privilege separation - Some projects like a file server need privilege
-separation to be able to switch to the connnection user and do file operations.
-uid_wrapper convincingly lies to the application letting it believe it is
-operating as root and even switching betwen uids and gids as needed.
+This is a wrapper for the user, group and hosts NSS API.
 
-More precise this library intercepts seteuid and related calls, and simulates
-them in a manner similar to the nss_wrapper and socket_wrapper libraries.
+DESCRIPTION
+-----------
 
-This allows you to do user switching when testing e.g. file servers.
+More details can be found in the manpage:
 
-To use it set the following environment variables:
+  man -l ./doc/uid_wrapper.1
 
-LD_PRELOAD=libuid_wrapper.so
-UID_WRAPPER=1
+or the raw text version:
 
-If you unset the variable or set it to 0 you can disable uwrap even if it is
-loaded. If you need the application to think it is root at startup you can set:
+  less ./doc/uid_wrapper.1.txt
 
-UID_WRAPPER_ROOT=1
+For installation instructions please take a look at the README.install file.
 
-If you set the environment variable to UID_WRAPPER_MYUID=1 before you call
-geteuid() then it will return the real uid.
+MAILINGLIST
+-----------
 
-To find out if uid_wrapper is enabled, we suggest to implment the following
-function in a library your application loads:
+As the mailing list samba-technical is used and can be found here:
 
-int uid_wrapper_enabled(void)
-{
-    return 0;
-}
-
-Then you can use:
-
-if (uid_wrapper_enabled()) {
-    /* special uid_wrapper handling code */
-}
-
-uid_wrapper implements this funciton too and it will be loaded before your
-library gets loaded.
+https://lists.samba.org/mailman/listinfo/samba-technical
