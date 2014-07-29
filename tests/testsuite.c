@@ -288,6 +288,17 @@ static void test_uwrap_setgroups(void **state)
 	assert_int_equal(rc, 5);
 
 	assert_memory_equal(glist, rlist, sizeof(glist));
+
+	/* Drop all supplementary groups. This is often done by daemons */
+	memset(rlist, 0, sizeof(rlist));
+
+	rc = setgroups(0, NULL);
+	assert_int_equal(rc, 0);
+
+	rc = getgroups(ARRAY_SIZE(rlist), rlist);
+	assert_int_equal(rc, 0);
+
+	assert_int_equal(rlist[0], 0);
 }
 
 #if defined(SYS_setgroups) || defined(SYS_setroups32)
@@ -310,6 +321,20 @@ static void test_uwrap_syscall_setgroups(void **state)
 	assert_int_equal(rc, 5);
 
 	assert_memory_equal(glist, rlist, sizeof(glist));
+
+	/* Drop all supplementary groups. This is often done by daemons */
+	memset(rlist, 0, sizeof(rlist));
+#ifdef SYS_setgroups
+	rc = syscall(SYS_setgroups, 0, NULL);
+#elif SYS_setgroups32
+	rc = syscall(SYS_setgroups32, 0, NULL);
+#endif
+	assert_int_equal(rc, 0);
+
+	rc = getgroups(ARRAY_SIZE(rlist), rlist);
+	assert_int_equal(rc, 0);
+
+	assert_int_equal(rlist[0], 0);
 }
 #endif
 
