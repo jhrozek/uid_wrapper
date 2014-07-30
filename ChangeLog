@@ -1,6 +1,12 @@
 ChangeLog
 ==========
 
+version 1.0.2 (released 2014-07-31)
+  * Added better logging system.
+  * Added a mapnpage
+  * Added build and install instructions
+  * Fixed threading issue in the desctructor.
+
 version 1.0.1 (released 2014-02-04)
   * Added --libs to pkg-config.
   * Added socket_wrapper-config.cmake
