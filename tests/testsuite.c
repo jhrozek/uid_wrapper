@@ -195,12 +195,6 @@ static void test_uwrap_syscall(void **state)
 	rc = syscall(SYS_getpid);
 	assert_int_equal(rc, getpid());
 
-	rc = access(".", R_OK);
-	assert_int_equal(rc, 0);
-
-	rc = syscall(SYS_access, ".", R_OK);
-	assert_int_equal(rc, 0);
-
 	ZERO_STRUCT(tv1);
 	ZERO_STRUCT(tv2);
 	ZERO_STRUCT(tz1);
