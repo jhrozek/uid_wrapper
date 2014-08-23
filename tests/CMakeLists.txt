@@ -47,3 +47,11 @@ set_property(
         test_uwrap_disabled
     PROPERTY
         ENVIRONMENT LD_PRELOAD=${CMAKE_BINARY_DIR}/src/libuid_wrapper.so)
+
+add_cmocka_test(test_linux_caps test_linux_caps.c ${CMOCKA_LIBRARY})
+set_property(
+    TEST
+        testsuite
+    PROPERTY
+        ENVIRONMENT ${TEST_ENVIRONMENT})
+

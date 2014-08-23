@@ -36,6 +36,7 @@
 #include <dlfcn.h>
 
 #include <pthread.h>
+#include <sys/capability.h> /* FIXME -- linux only */
 
 #ifdef HAVE_GCC_THREAD_LOCAL_STORAGE
 # define UWRAP_THREAD __thread
@@ -152,6 +153,21 @@ static void uwrap_log(enum uwrap_dbglvl_e dbglvl, const char *format, ...)
 #endif /* NDEBUG */
 
 /*****************
+ * LINUX KERNEL
+ *****************/
+#define _LINUX_CAPABILITY_VERSION_1  0x19980330
+#define _LINUX_CAPABILITY_VERSION_2  0x20071026
+
+struct uwrap_cap {
+	int version;
+
+	/* Only 64bit capabilities for now (Linux 2.6.25+) */
+	struct __user_cap_data_struct c64[2];
+	struct __user_cap_header_struct hdr;
+};
+
+
+/*****************
  * LIBC
  *****************/
 
@@ -209,6 +225,8 @@ struct uwrap_thread {
 	gid_t *groups;
 	int ngroups;
 
+	struct uwrap_cap *caps;
+
 	struct uwrap_thread *next;
 	struct uwrap_thread *prev;
 };
@@ -224,6 +242,7 @@ struct uwrap {
 
 	uid_t myuid;
 	uid_t mygid;
+	struct uwrap_cap caps;
 
 	struct uwrap_thread *ids;
 };
@@ -611,6 +630,9 @@ static void uwrap_init(void)
 		if (rc < 0) {
 			exit(-1);
 		}
+
+		/* TODO - support capabilities for old kernels */
+		uwrap.caps.version = _LINUX_CAPABILITY_VERSION_2;
 
 		uwrap.enabled = true;
 
