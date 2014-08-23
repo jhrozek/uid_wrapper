@@ -203,12 +203,16 @@ static void test_uwrap_syscall(void **state)
 	rc = gettimeofday(&tv1, &tz1);
 	assert_int_equal(rc, 0);
 
+#ifdef OSX
+	tv2.tv_sec = syscall(SYS_gettimeofday, &tv2, NULL);
+#else
 	rc = syscall(SYS_gettimeofday, &tv2, &tz2);
 	assert_int_equal(rc, 0);
-
-	assert_int_equal(tv1.tv_sec, tv2.tv_sec);
 	assert_int_equal(tz1.tz_dsttime, tz2.tz_dsttime);
 	assert_int_equal(tz1.tz_minuteswest, tz2.tz_minuteswest);
+#endif
+
+	assert_int_equal(tv1.tv_sec, tv2.tv_sec);
 }
 
 static void test_uwrap_syscall_setreuid(void **state)
