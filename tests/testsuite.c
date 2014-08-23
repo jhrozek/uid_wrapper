@@ -207,8 +207,8 @@ static void test_uwrap_syscall(void **state)
 	assert_int_equal(rc, 0);
 
 	assert_int_equal(tv1.tv_sec, tv2.tv_sec);
-	assert_int_equal(tz2.tz_dsttime, tz2.tz_dsttime);
-	assert_int_equal(tz2.tz_minuteswest, tz2.tz_minuteswest);
+	assert_int_equal(tz1.tz_dsttime, tz2.tz_dsttime);
+	assert_int_equal(tz1.tz_minuteswest, tz2.tz_minuteswest);
 }
 
 static void test_uwrap_syscall_setreuid(void **state)
